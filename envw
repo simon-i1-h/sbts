@@ -1,0 +1,11 @@
+#!/bin/sh
+
+set -e
+
+CFGDIR="$(cd "$(dirname "$0")" && pwd)/config"
+export PGSERVICEFILE="$CFGDIR/.pg_service.conf"
+export PGPASSFILE="$CFGDIR/.pgpass"
+export AWS_CONFIG_FILE="$CFGDIR/.aws/config"
+export AWS_SHARED_CREDENTIALS_FILE="$CFGDIR/.aws/credentials"
+
+exec "$@"

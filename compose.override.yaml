@@ -1,0 +1,32 @@
+# dev
+
+services:
+  app:
+    build:
+      target: dev
+    volumes:
+      - ./file:/home/app/opt/sbts/file
+      - ./sbts:/home/app/opt/sbts/sbts
+      - ./manage.py:/home/app/opt/sbts/manage.py
+      - ./entrypoint.sh:/home/app/opt/sbts/entrypoint.sh
+      - ./var/sbts:/home/app/var/sbts
+      - ./config:/home/app/opt/sbts/config
+      - ./sbts_custom.py:/home/app/opt/sbts/sbts_custom.py
+
+  pg:
+    ports:
+      - 127.0.0.1:5432:5432
+    environment:
+      POSTGRES_PASSWORD: pw
+    #volumes:
+    #  - ./var/lib/postgresql/data:/var/lib/postgresql/data
+
+  minio:
+    ports:
+      - 127.0.0.1:9000:9000
+      - 127.0.0.1:9001:9001
+    environment:
+      MINIO_ROOT_USER: root
+      MINIO_ROOT_PASSWORD: password
+    #volumes:
+    #  - ./var/minio/data:/data

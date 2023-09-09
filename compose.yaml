@@ -1,0 +1,13 @@
+services:
+  app:
+    build:
+      context: .
+    ports:
+      - 127.0.0.1:8000:8000
+
+  pg:
+    image: postgres:15
+
+  minio:
+    image: minio/minio
+    command: server /data --console-address ':9001'

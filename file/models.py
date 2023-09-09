@@ -1,0 +1,104 @@
+from django.db import models, transaction
+import uuid
+import boto3
+import logging
+
+from sbts.settings import S3_BUCKET_FILE, S3_ENDPOINT
+
+logger = logging.getLogger(__name__)
+
+
+class UploadedFile(models.Model):
+    class Manager(models.Manager):
+        def create_from_s3(self, key, name, last_modified, size, **kwargs):
+            with transaction.atomic():
+                uploader = S3Uploader.objects.get(
+                    id=key,
+                    status=S3Uploader.COMPLETED)
+                # S3のオブジェクトの所有者をS3UploaderからUploadedFileに移動
+                file = self.create(
+                    key=key,
+                    name=name,
+                    last_modified=last_modified,
+                    size=size,
+                    **kwargs)
+                uploader.delete()
+
+                return file
+
+    class Meta:
+        default_manager_name = 'objects'
+
+    objects = Manager()
+
+    key = models.UUIDField()
+    name = models.CharField(max_length=255)
+    last_modified = models.DateTimeField()
+    size = models.BigIntegerField()
+
+
+# 内部用
+class S3Uploader(models.Model):
+    COMPLETED = 0
+    UPLOADING = 1
+    STATUS_CHOICES = [
+        (COMPLETED, 'Completed'),
+        (UPLOADING, 'Uploading'),
+    ]
+
+    id = models.UUIDField(primary_key=True, editable=False, default=uuid.uuid4)
+    status = models.IntegerField(choices=STATUS_CHOICES)
+
+    # https://github.com/boto/boto3/issues/50#issuecomment-72079954
+    @classmethod
+    def upload(cls, file):
+        key = uuid.uuid4()
+
+        with transaction.atomic(durable=True):
+            cls.objects.create(
+                id=key,
+                status=cls.UPLOADING)
+
+        s3client = boto3.client('s3', endpoint_url=S3_ENDPOINT)
+
+        # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.create_multipart_upload
+        res = s3client.create_multipart_upload(
+            Bucket=S3_BUCKET_FILE,
+            Key=str(key))
+        upload_id = res['UploadId']
+
+        multipart_upload = {
+            'Parts': []
+        }
+        # chunk_sizeはS3の仕様で5MB (5MiB?)以上にしなければならない。
+        # 末尾だけは制限なし。
+        for i, chunk in enumerate(file.chunks(chunk_size=8 * (1024 ** 2))):
+            partnum = i + 1  # 1 ~ 10,000
+            part = s3client.upload_part(
+                Body=chunk,
+                Bucket=S3_BUCKET_FILE,
+                Key=str(key),
+                PartNumber=partnum,
+                UploadId=upload_id)
+            multipart_upload['Parts'].append({
+                'ETag': part['ETag'],
+                'PartNumber': partnum,
+            })
+
+        # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.complete_multipart_upload
+        s3client.complete_multipart_upload(
+            Bucket=S3_BUCKET_FILE,
+            Key=str(key),
+            MultipartUpload=multipart_upload,
+            UploadId=upload_id)
+
+        with transaction.atomic(durable=True):
+            uploader = cls.objects.get(id=key, status=cls.UPLOADING)
+            uploader.status = cls.COMPLETED
+            uploader.save()
+
+        return key
+
+
+def upload_file(file):
+    return S3Uploader.upload(file)

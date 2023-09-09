@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <ul>
+    <li><strong>kind, name, lastmod, size, key</strong></li>
+    {% for file in file_list %}
+    <li>{{ file.kind }}, {{ file.name }}, {{ file.lastmod }}, {{ file.size }}, <a href="{% url 'file' file.key %}">link</a></li>
+    {% endfor %}
+  </ul>
+
+  <form action="{% url 'upload' %}" enctype="multipart/form-data"
+      method="post">
+    {% csrf_token %}
+    <fieldset>
+      <legend>file</legend>
+      <input type="file" name="file">
+    </fieldset>
+    <input type="submit" value="upload">
+  </form>
+{% endblock %}
