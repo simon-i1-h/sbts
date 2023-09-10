@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% load static %}{% block content %}
+{% block content %}
   {% csrf_token %}
   <ul>
     <li><strong>kind, name, lastmod, size, key</strong></li>
