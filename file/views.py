@@ -1,10 +1,9 @@
 from django.db import transaction
 
-from django.http import HttpResponseRedirect, HttpResponseBadRequest, \
-    FileResponse
+from django.http import HttpResponse, FileResponse, JsonResponse, \
+    HttpResponseNotAllowed
 from django.shortcuts import render
 from django.utils import timezone
-from django.urls import reverse
 from .models import UploadedFile, upload_file
 import boto3
 
@@ -12,6 +11,9 @@ from sbts.settings import S3_BUCKET_FILE, S3_ENDPOINT
 
 
 def index(request):
+    if request.method != 'GET':
+        return HttpResponseNotAllowed(['GET'])
+
     context = {
         'file_list': [
             {
@@ -28,22 +30,33 @@ def index(request):
 
 
 def upload(request):
-    if 'file' in request.FILES:
-        key = upload_file(request.FILES['file'])
-    else:
-        raise HttpResponseBadRequest('invalied request (file)')
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
+
+    key = upload_file(request)
+    return JsonResponse({
+        'key': key
+    })
+
+
+def create(request):
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
 
     with transaction.atomic():
         UploadedFile.objects.create_from_s3(
-            key=key,
-            name=request.FILES['file'].name,
+            key=request.POST['key'],
+            name=request.POST['name'],
             last_modified=timezone.now(),
-            size=request.FILES['file'].size)
+            size=request.POST['size'])
 
-    return HttpResponseRedirect(reverse('index'))
+    return HttpResponse()
 
 
 def file(request, key):
+    if request.method != 'GET':
+        return HttpResponseNotAllowed(['GET'])
+
     fname = UploadedFile.objects.get(key=key).name
     s3client = boto3.client('s3', endpoint_url=S3_ENDPOINT)
     s3obj = s3client.get_object(Bucket=S3_BUCKET_FILE, Key=str(key))

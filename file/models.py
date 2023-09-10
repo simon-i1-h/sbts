@@ -59,10 +59,47 @@ class S3Uploader(models.Model):
                 status=cls.UPLOADING)
 
         s3client = boto3.client('s3', endpoint_url=S3_ENDPOINT)
-        s3client.put_object(
+
+        resp = s3client.create_multipart_upload(
+            Bucket=S3_BUCKET_FILE,
+            Key=str(key))
+        upload_id = resp['UploadId']
+
+        multipart_upload = {
+            'Parts': []
+        }
+        partnum = 1  # 1 ~ 10,000
+        while chunk := file.read(8 * (1024 ** 2)):
+            part = s3client.upload_part(
+                Body=chunk,
+                Bucket=S3_BUCKET_FILE,
+                Key=str(key),
+                PartNumber=partnum,
+                UploadId=upload_id)
+            multipart_upload['Parts'].append({
+                'ETag': part['ETag'],
+                'PartNumber': partnum,
+            })
+            partnum += 1
+
+        # 空ファイルの場合
+        if partnum == 1:
+            part = s3client.upload_part(
+                Body=b'',
+                Bucket=S3_BUCKET_FILE,
+                Key=str(key),
+                PartNumber=partnum,
+                UploadId=upload_id)
+            multipart_upload['Parts'].append({
+                'ETag': part['ETag'],
+                'PartNumber': partnum,
+            })
+
+        s3client.complete_multipart_upload(
             Bucket=S3_BUCKET_FILE,
             Key=str(key),
-            Body=file)
+            MultipartUpload=multipart_upload,
+            UploadId=upload_id)
 
         with transaction.atomic(durable=True):
             uploader = cls.objects.get(id=key, status=cls.UPLOADING)

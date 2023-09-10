@@ -7,5 +7,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', file.views.index, name='index'),
     path('upload/', file.views.upload, name='upload'),
+    path('create/', file.views.create, name='create'),
     path('file/<uuid:key>/', file.views.file, name='file'),
 ]

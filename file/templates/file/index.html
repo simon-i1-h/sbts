@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
-{% block content %}
+{% load static %}{% block content %}
+  {% csrf_token %}
   <ul>
     <li><strong>kind, name, lastmod, size, key</strong></li>
     {% for file in file_list %}
@@ -8,13 +9,8 @@
     {% endfor %}
   </ul>
 
-  <form action="{% url 'upload' %}" enctype="multipart/form-data"
-      method="post">
-    {% csrf_token %}
-    <fieldset>
-      <legend>file</legend>
-      <input type="file" name="file">
-    </fieldset>
-    <input type="submit" value="upload">
-  </form>
+  <label>file <input type="file" id="file"></label>
+  <button id="upload">upload</button>
+
+  <script src="{% static 'file/file.js' %}"></script>
 {% endblock %}
