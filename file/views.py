@@ -6,7 +6,6 @@ from django.shortcuts import render
 from django.utils import timezone
 from django.urls import reverse
 from .models import UploadedFile, upload_file
-import tempfile
 import boto3
 
 from sbts.settings import S3_BUCKET_FILE, S3_ENDPOINT
@@ -28,8 +27,6 @@ def index(request):
     return render(request, 'file/index.html', context)
 
 
-# TODO: 分割アップロード
-# -> いや、分割アップロードやめる、かも
 def upload(request):
     if 'file' in request.FILES:
         key = upload_file(request.FILES['file'])
@@ -48,11 +45,14 @@ def upload(request):
 
 def file(request, key):
     fname = UploadedFile.objects.get(key=key).name
-    s3c = boto3.client('s3', endpoint_url=S3_ENDPOINT)
-    f = tempfile.NamedTemporaryFile()
-    s3c.download_fileobj(
-        Bucket=S3_BUCKET_FILE,
-        Key=str(key),
-        Fileobj=f)
-    f.seek(0)
-    return FileResponse(f, as_attachment=True, filename=fname)
+    s3client = boto3.client('s3', endpoint_url=S3_ENDPOINT)
+    s3obj = s3client.get_object(Bucket=S3_BUCKET_FILE, Key=str(key))
+
+    resp = FileResponse(
+        s3obj['Body'],
+        content_type='application/octet-stream',
+        as_attachment=True,
+        filename=fname,
+    )
+    resp['Content-Length'] = s3obj['ContentLength']
+    return resp
