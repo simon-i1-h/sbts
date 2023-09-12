@@ -6,7 +6,7 @@ import file.views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', file.views.index, name='index'),
-    path('upload/', file.views.upload, name='upload'),
-    path('create/', file.views.create, name='create'),
-    path('file/<uuid:key>/', file.views.file, name='file'),
+    path('api/blobs/<uuid:key>/', file.views.file, name='file'),
+    path('api/blobs/', file.views.upload, name='upload'),
+    path('api/files/', file.views.create, name='create'),
 ]

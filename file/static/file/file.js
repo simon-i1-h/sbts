@@ -11,7 +11,7 @@ upload.addEventListener('click', async ev => {
     let file = file_elem.files[0];
 
     try {
-        let resp = await fetch('/upload/', {
+        let resp = await fetch('/api/blobs/', {
             method: 'POST',
             mode: 'same-origin',
             headers: {
@@ -27,7 +27,7 @@ upload.addEventListener('click', async ev => {
 
         let {key} = await resp.json();
 
-        resp = await fetch('/create/', {
+        resp = await fetch('/api/files/', {
             method: 'POST',
             mode: 'same-origin',
             headers: {
