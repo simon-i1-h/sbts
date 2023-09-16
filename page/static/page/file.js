@@ -13,7 +13,7 @@ upload.addEventListener('click', async ev => {
     let file = file_elem.files[0];
 
     try {
-        let resp = await fetch(url_map['upload'], {
+        let resp = await fetch(url_map['file:upload'], {
             method: 'POST',
             mode: 'same-origin',
             headers: {
@@ -29,7 +29,7 @@ upload.addEventListener('click', async ev => {
 
         let {key} = await resp.json();
 
-        resp = await fetch(url_map['create'], {
+        resp = await fetch(url_map['file:create'], {
             method: 'POST',
             mode: 'same-origin',
             headers: {

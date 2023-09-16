@@ -23,7 +23,7 @@ def index(request):
         'constant_map': {
             'url_map': {
                 name: reverse(name)
-                for name in ['upload', 'create']
+                for name in ['file:upload', 'file:create']
             }
         },
     }
