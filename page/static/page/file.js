@@ -1,5 +1,5 @@
 let upload = document.querySelector('#upload');
-let const_map = JSON.parse(document.querySelector('#file-data').textContent);
+let const_map = JSON.parse(document.querySelector('#file-data').text);
 let url_map = const_map['url_map'];
 
 upload.addEventListener('click', async ev => {
