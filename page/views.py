@@ -1,16 +1,22 @@
-from django.http import HttpResponseNotAllowed
-from django.shortcuts import render
 from django.urls import reverse
+from django.views.generic.base import TemplateView
 
 from file.models import UploadedFile
 
 
-def index(request):
-    if request.method != 'GET':
-        return HttpResponseNotAllowed(['GET'])
+# TODO ログイン必須なテンプレートビューの予定
+class LoginRequiredTemplateView(TemplateView):
+    def get(self, request, *args, **kwargs):
+        # TODO ここでrequestからuserを取り出し
+        return super().get(request, args, kwargs)
 
-    context = {
-        'file_list': [
+
+class TopPageView(LoginRequiredTemplateView):
+    template_name = 'page/top.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['file_list'] = [
             {
                 'kind': 'File',
                 'name': f.name,
@@ -18,13 +24,12 @@ def index(request):
                 'size': f.size,
                 'key': str(f.key),
             }
-            for f in UploadedFile.objects.all().order_by('name')
-        ],
-        'constant_map': {
+            for f in UploadedFile.objects.all().order_by('name', 'last_modified')
+        ]
+        ctx['constant_map'] = {
             'url_map': {
                 name: reverse(name)
                 for name in ['file:upload', 'file:create']
             }
-        },
-    }
-    return render(request, 'page/index.html', context)
+        }
+        return ctx
