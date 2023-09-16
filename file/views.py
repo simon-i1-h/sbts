@@ -27,13 +27,12 @@ def create(request):
         UploadedFile.objects.create_from_s3(
             key=request.POST['key'],
             name=request.POST['name'],
-            last_modified=timezone.now(),
-            size=request.POST['size'])
+            last_modified=timezone.now())
 
     return HttpResponse()
 
 
-def file(request, key):
+def blob(request, key):
     if request.method != 'GET':
         return HttpResponseNotAllowed(['GET'])
 

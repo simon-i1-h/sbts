@@ -38,7 +38,6 @@ upload.addEventListener('click', async ev => {
             body: new URLSearchParams({
                 key: key,
                 name: file.name,
-                size: file.size,
             }),
         });
 

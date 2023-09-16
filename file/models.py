@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 class UploadedFile(models.Model):
     class Manager(models.Manager):
-        def create_from_s3(self, key, name, last_modified, size, **kwargs):
+        def create_from_s3(self, key, name, last_modified, **kwargs):
             with transaction.atomic():
                 uploader = S3Uploader.objects.get(
                     id=key,
@@ -20,7 +20,7 @@ class UploadedFile(models.Model):
                     key=key,
                     name=name,
                     last_modified=last_modified,
-                    size=size,
+                    size=uploader.size,
                     **kwargs)
                 uploader.delete()
 
@@ -48,10 +48,12 @@ class S3Uploader(models.Model):
 
     id = models.UUIDField(primary_key=True, editable=False, default=uuid.uuid4)
     status = models.IntegerField(choices=STATUS_CHOICES)
+    size = models.BigIntegerField(default=-1)  # -1は未設定を表す
 
     @classmethod
     def upload(cls, file):
         key = uuid.uuid4()
+        size = 0
 
         with transaction.atomic(durable=True):
             cls.objects.create(
@@ -81,6 +83,7 @@ class S3Uploader(models.Model):
                 'PartNumber': partnum,
             })
             partnum += 1
+            size += len(chunk)
 
         # 空ファイルの場合
         if partnum == 1:
@@ -104,6 +107,7 @@ class S3Uploader(models.Model):
         with transaction.atomic(durable=True):
             uploader = cls.objects.get(id=key, status=cls.UPLOADING)
             uploader.status = cls.COMPLETED
+            uploader.size = size
             uploader.save()
 
         return key
