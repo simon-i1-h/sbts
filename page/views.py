@@ -4,14 +4,7 @@ from django.views.generic.base import TemplateView
 from file.models import UploadedFile
 
 
-# TODO ログイン必須なテンプレートビューの予定
-class LoginRequiredTemplateView(TemplateView):
-    def get(self, request, *args, **kwargs):
-        # TODO ここでrequestからuserを取り出し
-        return super().get(request, args, kwargs)
-
-
-class TopPageView(LoginRequiredTemplateView):
+class TopPageView(TemplateView):
     template_name = 'page/top.html'
 
     def get_context_data(self, **kwargs):
