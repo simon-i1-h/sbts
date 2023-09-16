@@ -13,5 +13,6 @@
   <label>file <input type="file" id="file"></label>
   <button id="upload">upload</button>
 
+  {{ constant_map|json_script:"file-data" }}
   <script src="{% static 'file/file.js' %}"></script>
 {% endblock %}

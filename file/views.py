@@ -3,6 +3,7 @@ from django.db import transaction
 from django.http import HttpResponse, FileResponse, JsonResponse, \
     HttpResponseNotAllowed
 from django.shortcuts import render
+from django.urls import reverse
 from django.utils import timezone
 from .models import UploadedFile, upload_file
 import boto3
@@ -24,7 +25,13 @@ def index(request):
                 'key': str(f.key),
             }
             for f in UploadedFile.objects.all().order_by('name')
-        ]
+        ],
+        'constant_map': {
+            'url_map': {
+                name: reverse(name)
+                for name in ['upload', 'create']
+            }
+        },
     }
     return render(request, 'file/index.html', context)
 

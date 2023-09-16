@@ -1,4 +1,6 @@
 let upload = document.querySelector('#upload');
+let const_map = JSON.parse(document.querySelector('#file-data').textContent);
+let url_map = const_map['url_map'];
 
 upload.addEventListener('click', async ev => {
     let csrf_token = document.querySelector('[name=csrfmiddlewaretoken]').value;
@@ -11,7 +13,7 @@ upload.addEventListener('click', async ev => {
     let file = file_elem.files[0];
 
     try {
-        let resp = await fetch('/api/blobs/', {
+        let resp = await fetch(url_map['upload'], {
             method: 'POST',
             mode: 'same-origin',
             headers: {
@@ -27,7 +29,7 @@ upload.addEventListener('click', async ev => {
 
         let {key} = await resp.json();
 
-        resp = await fetch('/api/files/', {
+        resp = await fetch(url_map['create'], {
             method: 'POST',
             mode: 'same-origin',
             headers: {
