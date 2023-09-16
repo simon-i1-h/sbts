@@ -6,6 +6,7 @@ services:
       target: dev
     volumes:
       - ./file:/home/app/opt/sbts/file
+      - ./page:/home/app/opt/sbts/page
       - ./sbts:/home/app/opt/sbts/sbts
       - ./manage.py:/home/app/opt/sbts/manage.py
       - ./entrypoint.sh:/home/app/opt/sbts/entrypoint.sh

@@ -8,6 +8,7 @@ ALLOWED_HOSTS = []
 
 
 INSTALLED_APPS = [
+    'page.apps.PageConfig',
     'file.apps.FileConfig',
     'django.contrib.admin',
     'django.contrib.auth',
