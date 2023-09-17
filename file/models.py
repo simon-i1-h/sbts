@@ -10,11 +10,12 @@ logger = logging.getLogger(__name__)
 
 class UploadedFile(models.Model):
     class Manager(models.Manager):
-        def create_from_s3(self, key, name, last_modified, **kwargs):
+        def create_from_s3(self, key, username, name, last_modified, **kwargs):
             with transaction.atomic():
                 uploader = S3Uploader.objects.get(
                     id=key,
-                    status=S3Uploader.COMPLETED)
+                    status=S3Uploader.COMPLETED,
+                    username=username)
                 # S3のオブジェクトの所有者をS3UploaderからUploadedFileに移動
                 file = self.create(
                     key=key,
@@ -49,16 +50,18 @@ class S3Uploader(models.Model):
     id = models.UUIDField(primary_key=True, editable=False, default=uuid.uuid4)
     status = models.IntegerField(choices=STATUS_CHOICES)
     size = models.BigIntegerField(default=-1)  # -1は未設定を表す
+    username = models.CharField(max_length=150)
 
     @classmethod
-    def upload(cls, file):
+    def upload(cls, file, username):
         key = uuid.uuid4()
         size = 0
 
         with transaction.atomic(durable=True):
             cls.objects.create(
                 id=key,
-                status=cls.UPLOADING)
+                status=cls.UPLOADING,
+                username=username)
 
         s3client = boto3.client('s3', endpoint_url=S3_ENDPOINT)
 
@@ -113,5 +116,5 @@ class S3Uploader(models.Model):
         return key
 
 
-def upload_file(file):
-    return S3Uploader.upload(file)
+def upload_file(file, username):
+    return S3Uploader.upload(file, username)

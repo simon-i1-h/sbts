@@ -15,7 +15,7 @@ def upload(request):
     if request.method != 'POST':
         return HttpResponseNotAllowed(['POST'])
 
-    key = upload_file(request)
+    key = upload_file(request, request.user.username)
     return JsonResponse({
         'key': key
     })
@@ -29,6 +29,7 @@ def create(request):
     with transaction.atomic():
         UploadedFile.objects.create_from_s3(
             key=request.POST['key'],
+            username=request.user.username,
             name=request.POST['name'],
             last_modified=timezone.now())
 
