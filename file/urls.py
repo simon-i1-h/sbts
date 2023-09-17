@@ -1,11 +1,11 @@
 from django.urls import path
 
-from . import views
+from .views import BlobView, UploadView, CreateView
 
 
 app_name = 'file'
 urlpatterns = [
-    path('blobs/<uuid:key>/', views.blob, name='blob'),
-    path('blobs/', views.upload, name='upload'),
-    path('files/', views.create, name='create'),
+    path('blobs/<uuid:key>/', BlobView.as_view(), name='blob'),
+    path('blobs/', UploadView.as_view(), name='upload'),
+    path('files/', CreateView.as_view(), name='create'),
 ]

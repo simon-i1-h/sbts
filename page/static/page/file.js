@@ -33,9 +33,10 @@ upload.addEventListener('click', async ev => {
             method: 'POST',
             mode: 'same-origin',
             headers: {
+                'Content-Type': 'application/json',
                 'X-CSRFToken': csrf_token,
             },
-            body: new URLSearchParams({
+            body: JSON.stringify({
                 key: key,
                 name: file.name,
             }),
