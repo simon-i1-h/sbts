@@ -21,7 +21,7 @@ USER root
 # https://stackoverflow.com/a/52046161
 STOPSIGNAL SIGINT
 
-CMD ["/home/app/opt/sbts/entrypoint.sh"]
+CMD ["/home/app/opt/sbts/envw", "/home/app/opt/sbts/entrypoint.sh"]
 
 # ----------------------------------------
 FROM base AS dev
