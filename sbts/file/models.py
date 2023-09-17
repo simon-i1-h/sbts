@@ -3,7 +3,7 @@ import uuid
 import boto3
 import logging
 
-from sbts.settings import S3_BUCKET_FILE, S3_ENDPOINT
+from sbts.public.settings import S3_BUCKET_FILE, S3_ENDPOINT
 
 logger = logging.getLogger(__name__)
 

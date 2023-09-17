@@ -6,7 +6,7 @@
 
 ```
 cp -r config-sample config
-cp sbts_custom-sample.py sbts_custom.py
+cp sbts_public_custom-sample.py sbts_public_custom.py
 docker compose build
 docker compose up -d
 ```

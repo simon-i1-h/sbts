@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 
 import boto3
 
-from sbts.settings import S3_BUCKET_FILE, S3_ENDPOINT
+from sbts.public.settings import S3_BUCKET_FILE, S3_ENDPOINT
 
 from .models import UploadedFile, upload_file
 

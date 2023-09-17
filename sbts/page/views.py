@@ -4,7 +4,7 @@ from django.views.generic.base import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
 
-from file.models import UploadedFile
+from sbts.file.models import UploadedFile
 
 
 class LoginRequiredTemplateView(LoginRequiredMixin, TemplateView):

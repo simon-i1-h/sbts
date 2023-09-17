@@ -8,8 +8,8 @@ ALLOWED_HOSTS = []
 
 
 INSTALLED_APPS = [
-    'page.apps.PageConfig',
-    'file.apps.FileConfig',
+    'sbts.page.apps.PageConfig',
+    'sbts.file.apps.FileConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -28,7 +28,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'sbts.urls'
+ROOT_URLCONF = 'sbts.public.urls'
 
 TEMPLATES = [
     {
@@ -46,7 +46,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'sbts.wsgi.application'
+WSGI_APPLICATION = 'sbts.public.wsgi.application'
 
 
 DATABASES = {
@@ -129,4 +129,4 @@ REST_FRAMEWORK = {
 }
 
 
-from sbts_custom import *
+from sbts_public_custom import *

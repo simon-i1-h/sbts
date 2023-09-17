@@ -5,15 +5,13 @@ services:
     build:
       target: dev
     volumes:
-      - ./file:/home/app/opt/sbts/file
-      - ./page:/home/app/opt/sbts/page
       - ./sbts:/home/app/opt/sbts/sbts
       - ./manage.py:/home/app/opt/sbts/manage.py
       - ./entrypoint.sh:/home/app/opt/sbts/entrypoint.sh
       - ./envw:/home/app/opt/sbts/envw
       - ./var/sbts:/home/app/var/sbts
       - ./config:/home/app/opt/sbts/config
-      - ./sbts_custom.py:/home/app/opt/sbts/sbts_custom.py
+      - ./sbts_public_custom.py:/home/app/opt/sbts/sbts_public_custom.py
 
   pg:
     ports:
