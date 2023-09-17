@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 import boto3
+import io
 
 from .models import UploadedFile, upload_file
 
@@ -16,7 +17,7 @@ class StreamParser(BaseParser):
     media_type = 'application/octet-stream'
 
     def parse(self, stream, media_type=None, parser_context=None):
-        return stream
+        return {'blob': stream}
 
 
 class StreamRequestView(APIView):
@@ -29,7 +30,11 @@ class LoginRequiredView(LoginRequiredMixin, View):
 
 class UploadView(StreamRequestView):
     def post(self, request, format=None):
-        key = upload_file(request.data, request.user.username)
+        key = upload_file(
+            # HTTPリクエストのボディが空な場合、request.dataが空辞書に
+            # なる
+            request.data.get('blob', io.BytesIO(b'')),
+            request.user.username)
         return Response({'key': key})
 
 

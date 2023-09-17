@@ -2,9 +2,6 @@ from django.conf import settings
 from django.db import models, transaction
 import uuid
 import boto3
-import logging
-
-logger = logging.getLogger(__name__)
 
 
 class UploadedFile(models.Model):
