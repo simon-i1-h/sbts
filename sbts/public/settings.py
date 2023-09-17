@@ -126,6 +126,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ],
     'COMPACT_JSON': False,
+    'EXCEPTION_HANDLER': 'sbts.public.utils.uncaught_exception_handler',
 }
 
 
