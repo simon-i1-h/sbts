@@ -1,9 +1,8 @@
+from django.conf import settings
 from django.db import models, transaction
 import uuid
 import boto3
 import logging
-
-from sbts.public.settings import S3_BUCKET_FILE, S3_ENDPOINT
 
 logger = logging.getLogger(__name__)
 
@@ -63,10 +62,10 @@ class S3Uploader(models.Model):
                 status=cls.UPLOADING,
                 username=username)
 
-        s3client = boto3.client('s3', endpoint_url=S3_ENDPOINT)
+        s3client = boto3.client('s3', endpoint_url=settings.S3_ENDPOINT)
 
         resp = s3client.create_multipart_upload(
-            Bucket=S3_BUCKET_FILE,
+            Bucket=settings.S3_BUCKET_FILE,
             Key=str(key))
         upload_id = resp['UploadId']
 
@@ -77,7 +76,7 @@ class S3Uploader(models.Model):
         while chunk := file.read(8 * (1024 ** 2)):
             part = s3client.upload_part(
                 Body=chunk,
-                Bucket=S3_BUCKET_FILE,
+                Bucket=settings.S3_BUCKET_FILE,
                 Key=str(key),
                 PartNumber=partnum,
                 UploadId=upload_id)
@@ -92,7 +91,7 @@ class S3Uploader(models.Model):
         if partnum == 1:
             part = s3client.upload_part(
                 Body=b'',
-                Bucket=S3_BUCKET_FILE,
+                Bucket=settings.S3_BUCKET_FILE,
                 Key=str(key),
                 PartNumber=partnum,
                 UploadId=upload_id)
@@ -102,7 +101,7 @@ class S3Uploader(models.Model):
             })
 
         s3client.complete_multipart_upload(
-            Bucket=S3_BUCKET_FILE,
+            Bucket=settings.S3_BUCKET_FILE,
             Key=str(key),
             MultipartUpload=multipart_upload,
             UploadId=upload_id)

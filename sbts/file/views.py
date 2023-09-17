@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.http import FileResponse
 from django.utils import timezone
 from django.views import View
@@ -7,8 +8,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 import boto3
-
-from sbts.public.settings import S3_BUCKET_FILE, S3_ENDPOINT
 
 from .models import UploadedFile, upload_file
 
@@ -47,8 +46,10 @@ class CreateView(APIView):
 class BlobView(LoginRequiredView):
     def get(self, request, *args, **kwargs):
         fname = UploadedFile.objects.get(key=kwargs['key']).name
-        s3client = boto3.client('s3', endpoint_url=S3_ENDPOINT)
-        s3obj = s3client.get_object(Bucket=S3_BUCKET_FILE, Key=str(kwargs['key']))
+        s3client = boto3.client('s3', endpoint_url=settings.S3_ENDPOINT)
+        s3obj = s3client.get_object(
+            Bucket=settings.S3_BUCKET_FILE,
+            Key=str(kwargs['key']))
 
         resp = FileResponse(
             s3obj['Body'],
