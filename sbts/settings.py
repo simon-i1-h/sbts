@@ -107,4 +107,9 @@ LOGGING = {
 }
 
 
+LOGIN_REDIRECT_URL = 'top'
+LOGIN_URL = 'login'
+LOGOUT_REDIRECT_URL = 'top'
+
+
 from sbts_custom import *

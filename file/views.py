@@ -3,12 +3,14 @@ from django.db import transaction
 from django.http import HttpResponse, FileResponse, JsonResponse, \
     HttpResponseNotAllowed
 from django.utils import timezone
+from django.contrib.auth.decorators import login_required
 from .models import UploadedFile, upload_file
 import boto3
 
 from sbts.settings import S3_BUCKET_FILE, S3_ENDPOINT
 
 
+@login_required
 def upload(request):
     if request.method != 'POST':
         return HttpResponseNotAllowed(['POST'])
@@ -19,6 +21,7 @@ def upload(request):
     })
 
 
+@login_required
 def create(request):
     if request.method != 'POST':
         return HttpResponseNotAllowed(['POST'])
@@ -32,6 +35,7 @@ def create(request):
     return HttpResponse()
 
 
+@login_required
 def blob(request, key):
     if request.method != 'GET':
         return HttpResponseNotAllowed(['GET'])

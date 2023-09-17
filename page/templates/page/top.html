@@ -2,7 +2,12 @@
 {% load static %}
 
 {% block content %}
-  {% csrf_token %}
+  {% if user.is_authenticated %}
+  <a href="{% url 'logout' %}">logout</a>
+  {% else %}
+  <a href="{% url 'login' %}">login</a>
+  {% endif %}
+
   <ul>
     <li><strong>kind, name, lastmod, size, key</strong></li>
     {% for file in file_list %}
@@ -13,6 +18,7 @@
   <label>file <input type="file" id="file"></label>
   <button id="upload">upload</button>
 
+  {% csrf_token %}
   {{ constant_map|json_script:"file-data" }}
   <script src="{% static 'page/file.js' %}"></script>
 {% endblock %}

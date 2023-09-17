@@ -1,10 +1,12 @@
 from django.contrib import admin
 from django.urls import include, path
-import page.views
+from page.views import TopPageView, LoginPageView, LogoutPageView
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', page.views.TopPageView.as_view(), name='top'),
+    path('', TopPageView.as_view(), name='top'),
+    path('login/', LoginPageView.as_view(), name='login'),
+    path('logout/', LogoutPageView.as_view(), name='logout'),
     path('api/file/', include('file.urls')),
 ]

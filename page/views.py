@@ -1,10 +1,17 @@
 from django.urls import reverse
 from django.views.generic.base import TemplateView
 
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.views import LoginView, LogoutView
+
 from file.models import UploadedFile
 
 
-class TopPageView(TemplateView):
+class LoginRequiredTemplateView(LoginRequiredMixin, TemplateView):
+    pass
+
+
+class TopPageView(LoginRequiredTemplateView):
     template_name = 'page/top.html'
 
     def get_context_data(self, **kwargs):
@@ -26,3 +33,12 @@ class TopPageView(TemplateView):
             }
         }
         return ctx
+
+
+class LoginPageView(LoginView):
+    template_name = 'page/login.html'
+    redirect_authenticated_user = True
+
+
+class LogoutPageView(LogoutView):
+    pass
