@@ -10,6 +10,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'sbts.page.apps.PageConfig',
     'sbts.file.apps.FileConfig',
+    'rest_framework',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
