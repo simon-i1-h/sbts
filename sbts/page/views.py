@@ -11,8 +11,13 @@ class LoginRequiredTemplateView(LoginRequiredMixin, TemplateView):
     pass
 
 
-class TopPageView(LoginRequiredTemplateView):
-    template_name = 'page/top.html'
+def top(request):
+    from django.views.generic.base import HttpResponse
+    return HttpResponse('hi')
+
+
+class FilePageView(LoginRequiredTemplateView):
+    template_name = 'page/file.html'
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
