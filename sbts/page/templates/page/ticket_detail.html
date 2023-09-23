@@ -1,0 +1,20 @@
+{% extends 'page/base.html' %}
+{% load static %}
+
+{% block content %}
+  <ul>
+    <li><strong>comment, created, last_updated, is_modified, key</strong></li>
+    {% for comment in comment_list %}
+    <li>{{ comment.comment }}, {{ comment.created }}, {{ comment.last_updated }},{{ comment.is_modified }},{{ comment.key }}</li>
+    {% endfor %}
+
+  <form action="{% url 'create_comment' ticket.key %}" method="post">
+    {% csrf_token %}
+    <fieldset>
+      <legend>コメント</legend>
+      <textarea name="comment"></textarea>
+    </fieldset>
+    <input type="submit" value="create">
+  </form>
+  </ul>
+{% endblock %}

@@ -49,18 +49,25 @@ class TicketPageView(LoginRequiredTemplateView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['ticket_list'] = [
-            {
+
+        ctx['ticket_list'] = []
+        for t in Ticket.objects.sorted_tickets():
+            lastcomment = t.comment_set.order_by('-last_updated').first()
+            if lastcomment is None:
+                lastmod = t.created_at
+            else:
+                lastmod = lastcomment.last_updated
+
+            ctx['ticket_list'].append({
                 'title': t.title,
-                'lastmod': '?',
+                'lastmod': lastmod,
                 'key': t.key,
-            }
-            for t in Ticket.objects.sorted_tickets()
-        ]
+            })
+
         return ctx
 
 
-class CreateTicketPageView(LoginRequiredMixin, View):
+class CreateTicketView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         now = timezone.now()
         Ticket.objects.create(key=uuid.uuid4(),
@@ -68,6 +75,43 @@ class CreateTicketPageView(LoginRequiredMixin, View):
                               created_at=now)
 
         return HttpResponseRedirect(reverse('ticket'))
+
+
+class TicketDetailPageView(LoginRequiredTemplateView):
+    template_name = 'page/ticket_detail.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ticket = Ticket.objects.get(key=kwargs['key'])
+        ctx['comment_list'] = [
+            {
+                'comment': c.comment,
+                'created': c.created_at,
+                'last_updated': c.last_updated,
+                'is_modified': c.is_modified,
+                'key': c.key,
+            }
+            for c in ticket.sorted_comments()
+        ]
+        ctx['ticket'] = {
+            'key': ticket.key,
+        }
+        return ctx
+
+
+class CreateCommentView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        now = timezone.now()
+        t = Ticket.objects.get(key=kwargs['key'])
+        t.comment_set.create(key=uuid.uuid4(),
+                             comment=request.POST['comment'],
+                             created_at=now,
+                             last_updated=now)
+
+        url = reverse('ticket_detail', kwargs={
+            'key': kwargs['key'],
+        })
+        return HttpResponseRedirect(url)
 
 
 class LoginPageView(LoginView):
