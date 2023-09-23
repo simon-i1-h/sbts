@@ -1,8 +1,10 @@
-let upload = document.querySelector('#upload');
+let uploadform = document.querySelector('#uploadform');
 let const_map = JSON.parse(document.querySelector('#file-data').text);
 let url_map = const_map['url_map'];
 
-upload.addEventListener('click', async ev => {
+uploadform.addEventListener('submit', async ev => {
+    ev.preventDefault();
+
     let csrf_token = document.querySelector('[name=csrfmiddlewaretoken]').value;
     let file_elem = document.querySelector('#file');
 
@@ -28,26 +30,11 @@ upload.addEventListener('click', async ev => {
         }
 
         let {key} = await resp.json();
-
-        resp = await fetch(url_map['file:create'], {
-            method: 'POST',
-            mode: 'same-origin',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrf_token,
-            },
-            body: JSON.stringify({
-                key: key,
-                name: file.name,
-            }),
-        });
-
-        if (!resp.ok) {
-            throw new Error(await resp.text());
-        }
-
-        window.location.reload();
+        document.querySelector('[name=blobkey]').value = key;
+        document.querySelector('[name=filename]').value = file.name;
     } catch (e) {
         console.error(e);
     }
+
+    uploadform.submit();
 });

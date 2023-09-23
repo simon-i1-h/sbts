@@ -16,6 +16,10 @@ class LoginRequiredTemplateView(LoginRequiredMixin, TemplateView):
     pass
 
 
+class LoginRequiredView(LoginRequiredMixin, View):
+    pass
+
+
 class TopPageView(LoginRequiredTemplateView):
     template_name = 'page/top.html'
 
@@ -38,10 +42,21 @@ class FilePageView(LoginRequiredTemplateView):
         ctx['constant_map'] = {
             'url_map': {
                 name: reverse(name)
-                for name in ['file:upload', 'file:create']
+                for name in ['file:upload']
             }
         }
         return ctx
+
+
+class CreateFileView(LoginRequiredView):
+    def post(self, request, *args, **kwargs):
+        UploadedFile.objects.create_from_s3(
+            key=request.POST['blobkey'],
+            username=request.user.username,
+            name=request.POST['filename'],
+            last_modified=timezone.now())
+
+        return HttpResponseRedirect(reverse('file'))
 
 
 class TicketPageView(LoginRequiredTemplateView):
@@ -67,7 +82,7 @@ class TicketPageView(LoginRequiredTemplateView):
         return ctx
 
 
-class CreateTicketView(LoginRequiredMixin, View):
+class CreateTicketView(LoginRequiredView):
     def post(self, request, *args, **kwargs):
         now = timezone.now()
         Ticket.objects.create(key=uuid.uuid4(),
@@ -99,7 +114,7 @@ class TicketDetailPageView(LoginRequiredTemplateView):
         return ctx
 
 
-class CreateCommentView(LoginRequiredMixin, View):
+class CreateCommentView(LoginRequiredView):
     def post(self, request, *args, **kwargs):
         now = timezone.now()
         t = Ticket.objects.get(key=kwargs['key'])

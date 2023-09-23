@@ -38,16 +38,6 @@ class UploadView(StreamRequestView):
         return Response({'key': key})
 
 
-class CreateView(APIView):
-    def post(self, request, format=None):
-        UploadedFile.objects.create_from_s3(
-            key=request.data['key'],
-            username=request.user.username,
-            name=request.data['name'],
-            last_modified=timezone.now())
-        return Response({})
-
-
 class BlobView(LoginRequiredView):
     def get(self, request, *args, **kwargs):
         fname = UploadedFile.objects.get(key=kwargs['key']).name

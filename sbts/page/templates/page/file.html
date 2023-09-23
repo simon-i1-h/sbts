@@ -9,10 +9,17 @@
     {% endfor %}
   </ul>
 
-  <label>file <input type="file" id="file"></label>
-  <button id="upload">upload</button>
+  <form action="{% url 'create_file' %}" method="post" id="uploadform">
+    {% csrf_token %}
+    <input type="hidden" name="blobkey">
+    <input type="hidden" name="filename">
+    <fieldset>
+      <legend>ファイル</legend>
+      <input type="file" id="file">{# これはフォームで送信されない #}
+    </fieldset>
+    <input type="submit" value="upload">
+  </form>
 
-  {% csrf_token %}
   {{ constant_map|json_script:"file-data" }}
   <script src="{% static 'page/file.js' %}"></script>
 {% endblock %}
