@@ -11,9 +11,8 @@ class LoginRequiredTemplateView(LoginRequiredMixin, TemplateView):
     pass
 
 
-def top(request):
-    from django.views.generic.base import HttpResponse
-    return HttpResponse('hi')
+class TopPageView(LoginRequiredTemplateView):
+    template_name = 'page/top.html'
 
 
 class FilePageView(LoginRequiredTemplateView):
