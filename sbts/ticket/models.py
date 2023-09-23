@@ -1,5 +1,7 @@
 from django.db import models
 
+import uuid
+
 
 class Ticket(models.Model):
     class Manager(models.Manager):
@@ -11,7 +13,7 @@ class Ticket(models.Model):
 
     objects = Manager()
 
-    key = models.UUIDField(primary_key=True)
+    key = models.UUIDField(primary_key=True, default=uuid.uuid4)
     title = models.TextField()
     created_at = models.DateTimeField()
 
@@ -20,7 +22,7 @@ class Ticket(models.Model):
 
 
 class Comment(models.Model):
-    key = models.UUIDField(primary_key=True)
+    key = models.UUIDField(primary_key=True, default=uuid.uuid4)
     comment = models.TextField()
     created_at = models.DateTimeField()
     last_updated = models.DateTimeField()

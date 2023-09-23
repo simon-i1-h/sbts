@@ -28,7 +28,7 @@ class UploadedFile(models.Model):
 
     objects = Manager()
 
-    key = models.UUIDField()
+    key = models.UUIDField(primary_key=True, default=uuid.uuid4)
     name = models.CharField(max_length=255)
     last_modified = models.DateTimeField()
     size = models.BigIntegerField()
@@ -43,7 +43,7 @@ class S3Uploader(models.Model):
         (UPLOADING, 'Uploading'),
     ]
 
-    id = models.UUIDField(primary_key=True, editable=False, default=uuid.uuid4)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     status = models.IntegerField(choices=STATUS_CHOICES)
     size = models.BigIntegerField(default=-1)  # -1は未設定を表す
     username = models.CharField(max_length=150)
