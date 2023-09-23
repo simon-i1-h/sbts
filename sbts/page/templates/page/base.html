@@ -8,11 +8,12 @@
 <body>
   <a href="{% url 'top' %}">トップ</a>
   <a href="{% url 'file' %}">ファイル</a>
+  <a href="{% url 'ticket' %}">チケット</a>
 
   {% if user.is_authenticated %}
-  <a href="{% url 'logout' %}">logout</a>
+  <a href="{% url 'logout' %}">ログアウト</a>
   {% else %}
-  <a href="{% url 'login' %}">login</a>
+  <a href="{% url 'login' %}">ログイン</a>
   {% endif %}{% block content %}
 {% endblock %}</body>
 </html>

@@ -1,0 +1,20 @@
+{% extends 'page/base.html' %}
+{% load static %}
+
+{% block content %}
+  <ul>
+    <li><strong>title, lastmod, key</strong></li>
+    {% for ticket in ticket_list %}
+    <li>{{ ticket.title }}, {{ ticket.lastmod }}, {#<a href="{% url 'ticket:ticket' ticket.key %}">link</a>#}</li>
+    {% endfor %}
+
+  <form action="{% url 'create_ticket' %}" method="post">
+    {% csrf_token %}
+    <fieldset>
+      <legend>チケットタイトル</legend>
+      <input type="text" name="title" size="80">
+    </fieldset>
+    <input type="submit" value="create">
+  </form>
+  </ul>
+{% endblock %}

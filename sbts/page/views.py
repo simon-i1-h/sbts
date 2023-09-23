@@ -1,10 +1,15 @@
+from django.http import HttpResponseRedirect
 from django.urls import reverse
-from django.views.generic.base import TemplateView
+from django.utils import timezone
+from django.views.generic.base import TemplateView, View
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
 
 from sbts.file.models import UploadedFile
+from sbts.ticket.models import Ticket
+
+import uuid
 
 
 class LoginRequiredTemplateView(LoginRequiredMixin, TemplateView):
@@ -37,6 +42,32 @@ class FilePageView(LoginRequiredTemplateView):
             }
         }
         return ctx
+
+
+class TicketPageView(LoginRequiredTemplateView):
+    template_name = 'page/ticket.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['ticket_list'] = [
+            {
+                'title': t.title,
+                'lastmod': '?',
+                'key': t.key,
+            }
+            for t in Ticket.objects.sorted_tickets()
+        ]
+        return ctx
+
+
+class CreateTicketPageView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        now = timezone.now()
+        Ticket.objects.create(key=uuid.uuid4(),
+                              title=request.POST['title'],
+                              created_at=now)
+
+        return HttpResponseRedirect(reverse('ticket'))
 
 
 class LoginPageView(LoginView):
