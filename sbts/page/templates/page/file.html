@@ -2,12 +2,12 @@
 {% load static %}
 
 {% block content %}
-  <ul>
-    <li><strong>kind, name, lastmod, size, key</strong></li>
+  <div>
+    <div><strong>kind, name, lastmod, size, key</strong></div>
     {% for file in file_list %}
-    <li>{{ file.kind }}, {{ file.name }}, {{ file.lastmod }}, {{ file.size }}, <a href="{% url 'file:blob' file.key %}">link</a></li>
+    <div>{{ file.kind }}, {{ file.name }}, {{ file.lastmod }}, {{ file.size }}, <a href="{% url 'file:blob' file.key %}">link</a></div>
     {% endfor %}
-  </ul>
+  </div>
 
   <form action="{% url 'create_file' %}" method="post" id="uploadform">
     {% csrf_token %}

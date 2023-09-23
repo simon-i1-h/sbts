@@ -6,14 +6,24 @@
   <title>{% block title %}sbts{% endblock %}</title>
 </head>
 <body>
-  <a href="{% url 'top' %}">トップ</a>
-  <a href="{% url 'file' %}">ファイル</a>
-  <a href="{% url 'ticket' %}">チケット</a>
+<header>
+  <nav>
+    <a href="{% url 'top' %}">sbts</a>
 
-  {% if user.is_authenticated %}
-  <a href="{% url 'logout' %}">ログアウト</a>
-  {% else %}
-  <a href="{% url 'login' %}">ログイン</a>
-  {% endif %}{% block content %}
-{% endblock %}</body>
+    <ul>
+      <li><a href="{% url 'file' %}">ファイル</a></li>
+      <li><a href="{% url 'ticket' %}">チケット</a></li>
+    </ul>
+
+    {% if user.is_authenticated %}
+    <a href="{% url 'logout' %}">ログアウト</a>
+    {% else %}
+    <a href="{% url 'login' %}">ログイン</a>
+    {% endif %}
+  </nav>
+</header>
+
+<main>{% block content %}
+{% endblock %}  </main>
+</body>
 </html>
