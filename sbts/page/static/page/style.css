@@ -4,6 +4,12 @@ strong {
   font-weight: bold;
 }
 
+body > hr {
+  width: 100%;
+  margin: 0.75rem 0;
+  border: 1px solid #d8dcd6; /* xkcd light grey */
+}
+
 body {
   font-family: sans-serif;
   display: grid;
@@ -56,10 +62,4 @@ body > * {
 
 .header-authn a:hover {
   text-decoration: underline;
-}
-
-.hr-header-main {
-  width: 100%;
-  margin: 0.75rem 0;
-  border: 1px solid #d8dcd6; /* xkcd light grey */
 }
