@@ -20,11 +20,25 @@ class LoginRequiredView(LoginRequiredMixin, View):
     pass
 
 
+class BaseFilePageView(LoginRequiredTemplateView):
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['selected_tab'] = 'file'
+        return ctx
+
+
+class BaseTicketPageView(LoginRequiredTemplateView):
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['selected_tab'] = 'ticket'
+        return ctx
+
+
 class TopPageView(LoginRequiredTemplateView):
     template_name = 'page/top.html'
 
 
-class FilePageView(LoginRequiredTemplateView):
+class FilePageView(BaseFilePageView):
     template_name = 'page/file.html'
 
     def get_context_data(self, **kwargs):
@@ -45,6 +59,7 @@ class FilePageView(LoginRequiredTemplateView):
                 for name in ['file:upload']
             }
         }
+
         return ctx
 
 
@@ -59,7 +74,7 @@ class CreateFileView(LoginRequiredView):
         return HttpResponseRedirect(reverse('file'))
 
 
-class TicketPageView(LoginRequiredTemplateView):
+class TicketPageView(BaseTicketPageView):
     template_name = 'page/ticket.html'
 
     def get_context_data(self, **kwargs):
@@ -92,7 +107,7 @@ class CreateTicketView(LoginRequiredView):
         return HttpResponseRedirect(reverse('ticket'))
 
 
-class TicketDetailPageView(LoginRequiredTemplateView):
+class TicketDetailPageView(BaseTicketPageView):
     template_name = 'page/ticket_detail.html'
 
     def get_context_data(self, **kwargs):
@@ -111,6 +126,7 @@ class TicketDetailPageView(LoginRequiredTemplateView):
         ctx['ticket'] = {
             'key': ticket.key,
         }
+
         return ctx
 
 
