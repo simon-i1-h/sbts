@@ -55,9 +55,17 @@ body > * {
   font-size: 1.125rem;
 }
 
+.header-navtab a:hover,
+.header-navtab a:active {
+  border-radius: 0.5rem;
+}
+
 .header-navtab a:hover {
   background-color: #d8dcd6; /* xkcd light grey */
-  border-radius: 0.5rem;
+}
+
+.header-navtab a:active {
+  background-color: #929591; /* xkcd grey */
 }
 
 .header-authn a:hover {
