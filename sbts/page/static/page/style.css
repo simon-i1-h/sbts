@@ -68,3 +68,60 @@ body > * {
 .header-authn a:hover {
   text-decoration: underline;
 }
+
+.file-list {
+  display: grid;
+  grid-template-columns: 1fr repeat(3, 32%) 1fr;
+}
+
+.file-list-name {
+  grid-column: 2;
+}
+
+.file-list-lastmod {
+  grid-column: 3;
+}
+
+.file-list-size {
+  grid-column: 4;
+}
+
+.file-list-header,
+.file-item {
+  padding: 0.5rem;
+
+  /* 他のアイテムと重なったとき */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-item a {
+  text-decoration: none;
+  color: #000000;
+}
+
+.file-item a:hover {
+  text-decoration: underline;
+}
+
+.file-list-header {
+  border-bottom: 1px solid #d8dcd6; /* xkcd light grey */
+}
+
+/*
+ * マウスポインタを要素の上にかざしたとき、同じ行すべての要素を選択する
+ */
+/* 1列目 */
+.file-item:nth-child(3n+1):has(+ .file-item:hover),
+.file-item:nth-child(3n+1):has(+ .file-item + .file-item:hover),
+/* 2列目 */
+.file-item:hover + .file-item:nth-child(3n+2),
+.file-item:nth-child(3n+2):has(+ .file-item:hover),
+/* 3列目 */
+.file-item:hover + .file-item + .file-item:nth-child(3n),
+.file-item:hover + .file-item:nth-child(3n),
+/* 自分自身 */
+.file-item:hover {
+  background-color: #d8dcd6; /* xkcd light grey */
+}

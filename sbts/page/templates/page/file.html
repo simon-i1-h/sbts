@@ -2,10 +2,14 @@
 {% load static %}
 
 {% block content %}
-  <div>
-    <div><strong>kind, name, lastmod, size, key</strong></div>
+  <div class="file-list">
+    <div class="file-list-header file-list-name"><strong>名前</strong></div>
+    <div class="file-list-header file-list-lastmod"><strong>最終更新</strong></div>
+    <div class="file-list-header file-list-size"><strong>大きさ</strong></div>
     {% for file in file_list %}
-    <div>{{ file.kind }}, {{ file.name }}, {{ file.lastmod }}, {{ file.size }}, <a href="{% url 'file:blob' file.key %}">link</a></div>
+    <div class="file-item file-list-name"><a href="{% url 'file:blob' file.key %}">{{ file.name }}</a></div>
+    <div class="file-item file-list-lastmod">{{ file.lastmod }}</div>
+    <div class="file-item file-list-size">{{ file.size }}</div>
     {% endfor %}
   </div>
 

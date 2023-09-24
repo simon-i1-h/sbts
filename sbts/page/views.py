@@ -12,6 +12,19 @@ from sbts.ticket.models import Ticket
 import uuid
 
 
+def pretty_nbytes(nbytes):
+    units = ['B', 'kiB', 'MiB', 'GiB', 'TiB', 'PiB']
+    i = 0
+    while i < len(units) - 1 and nbytes >= 1024:
+        nbytes /= 1024
+        i += 1
+
+    if nbytes % 1:
+        return f'{nbytes:,.1f} {units[i]}'
+    else:
+        return f'{nbytes:,.0f} {units[i]}'
+
+
 class LoginRequiredTemplateView(LoginRequiredMixin, TemplateView):
     pass
 
@@ -45,10 +58,9 @@ class FilePageView(BaseFilePageView):
         ctx = super().get_context_data(**kwargs)
         ctx['file_list'] = [
             {
-                'kind': 'File',
                 'name': f.name,
                 'lastmod': f.last_modified.isoformat(' ', 'seconds'),
-                'size': f.size,
+                'size': pretty_nbytes(f.size),
                 'key': str(f.key),
             }
             for f in UploadedFile.objects.all().order_by('name', 'last_modified')
