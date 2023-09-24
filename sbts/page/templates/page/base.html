@@ -11,8 +11,8 @@
     <span class="header-top"><a href="{% url 'top' %}" ><strong>sbts</strong></a></span>
 
     <ul class="header-navlist">
-      <li class="header-navitem header-navtab{% if selected_tab == 'file' %} header-navtab-selected{% endif %}"><a href="{% url 'file' %}">ファイル</a></li>
       <li class="header-navitem header-navtab{% if selected_tab == 'ticket' %} header-navtab-selected{% endif %}"><a href="{% url 'ticket' %}">チケット</a></li>
+      <li class="header-navitem header-navtab{% if selected_tab == 'file' %} header-navtab-selected{% endif %}"><a href="{% url 'file' %}">ファイル</a></li>
     </ul>
 
     <span class="header-navitem header-authn">
