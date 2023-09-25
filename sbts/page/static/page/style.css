@@ -21,6 +21,15 @@ body > * {
   grid-column: 2;
 }
 
+main {
+  display: grid;
+  grid-template-columns: 1fr 96% 1fr;
+}
+
+main > * {
+  grid-column: 2;
+}
+
 .header-nav {
   display: flex;
   align-items: center;
@@ -71,19 +80,19 @@ body > * {
 
 .file-list {
   display: grid;
-  grid-template-columns: 1fr repeat(3, 32%) 1fr;
+  grid-template-columns: 34% 33% 33%;
 }
 
 .file-list-name {
-  grid-column: 2;
+  grid-column: 1;
 }
 
 .file-list-lastmod {
-  grid-column: 3;
+  grid-column: 2;
 }
 
 .file-list-size {
-  grid-column: 4;
+  grid-column: 3;
 }
 
 .file-list-header,
@@ -124,4 +133,21 @@ body > * {
 /* 自分自身 */
 .file-item:hover {
   background-color: #d8dcd6; /* xkcd light grey */
+}
+
+button.upload {
+  appearance: none;
+  padding: 0.25rem 0.75rem;
+  color: #fdfdfe; /* xkcd pale grey */
+  background-color: #929591; /* xkcd grey */
+  border: 1px solid #363737; /* xkcd dark grey */
+  border-radius: 0.375rem;
+}
+
+button.upload:hover {
+  background-color: #7d7f7c /* xkcd medium grey */
+}
+
+button.upload:active {
+  background-color: #363737; /* xkcd dark grey */
 }
