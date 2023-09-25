@@ -18,9 +18,9 @@
     <div class="file-list-header file-list-lastmod"><strong>最終更新</strong></div>
     <div class="file-list-header file-list-size"><strong>大きさ</strong></div>
     {% for file in file_list %}
-    <div class="file-item file-list-name"><a href="{% url 'file:blob' file.key %}">{{ file.name }}</a></div>
-    <div class="file-item file-list-lastmod">{{ file.lastmod }}</div>
-    <div class="file-item file-list-size">{{ file.size }}</div>
+    <div class="file-item file-list-name"><a href="{% url 'file:blob' file.key %}" title="{{ file.name }}">{{ file.name }}</a></div>
+    <div class="file-item file-list-lastmod"><span title="{{ file.lastmod }}">{{ file.lastmod }}</span></div>
+    <div class="file-item file-list-size"><span title="{{ file.size }}">{{ file.size }}</span></div>
     {% endfor %}
   </div>
 
