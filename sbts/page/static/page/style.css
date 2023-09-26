@@ -31,7 +31,7 @@ body {
     font-family: sans-serif;
     display: grid;
     grid-template-columns: 1fr min(80rem, 97.5%) 1fr;
-    margin: 0.25rem 0;
+    margin: 0.5rem 0;
 }
 
 body > * {
@@ -102,7 +102,7 @@ main > * {
 
 .file-list {
     display: grid;
-    grid-template-columns: 34% 33% 33%;
+    grid-template-columns: 35% 25% 1fr;
 }
 
 .file-list-name {
