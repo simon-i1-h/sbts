@@ -2,19 +2,18 @@
 {% load static %}
 
 {% block content %}
-  <form action="{% url 'create_file' %}" method="post" id="uploadform">
+  <form action="{% url 'create_file' %}" method="post" class="widget-group" id="uploadform">
     {% csrf_token %}
     <input type="hidden" name="blobkey">
     <input type="hidden" name="filename">
-    <p>{% comment %}
+{% comment %}
       https://developer.mozilla.org/ja/docs/Web/API/File_API/Using_files_from_web_applications#click_%E3%83%A1%E3%82%BD%E3%83%83%E3%83%89%E3%82%92%E4%BD%BF%E7%94%A8%E3%81%97%E3%81%A6%E9%9D%9E%E8%A1%A8%E7%A4%BA%E3%81%AE_input_%E8%A6%81%E7%B4%A0%E3%82%92%E4%BD%BF%E7%94%A8%E3%81%99%E3%82%8B
-      {% endcomment %}
-      <input type="file" style="display: none;" id="uploadfile">{# ファイルの中身はフォームで送信されない(REST APIで送信) #}
-      <button type="button" class="upload" id="uploadbutton">＋アップロード</button>
-    </p>
+{% endcomment %}
+    <input type="file" style="display: none;" id="uploadfile">{# ファイルの中身はフォームで送信されない(REST APIで送信) #}
+    <button type="button" class="upload" id="uploadbutton">＋アップロード</button>
   </form>
 
-  <div class="file-list">
+  <div class="file-list widget-group">
     <div class="file-list-header file-list-name"><strong>名前</strong></div>
     <div class="file-list-header file-list-lastmod"><strong>最終更新</strong></div>
     <div class="file-list-header file-list-size"><strong>大きさ</strong></div>
