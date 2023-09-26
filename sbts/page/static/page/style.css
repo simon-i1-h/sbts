@@ -81,8 +81,8 @@ main > * {
 }
 
 .header-navtab a {
-    padding: 0.5rem 1rem;
-    margin: 0 0.5rem;
+    padding: 0.5rem 0.75rem;
+    margin: 0 0.25rem;
     font-size: 1.125rem;
 }
 
@@ -101,7 +101,7 @@ main > * {
 }
 
 .project-readme {
-    font-size: 1.125em;
+    font-size: 1.125rem;
 }
 
 .file-list {
@@ -199,15 +199,15 @@ main > * {
 }
 
 .ticket-extra {
-    font-size: 70%;
+    font-size: 0.7rem;
     color: var(--xkcd-medium-grey);
 }
 
 input[type="text" i].title {
     appearance: none;
     border: 1px solid black;
-    padding: 0.25em;
-    font-size: 1.125em;
+    padding: 0.25rem;
+    font-size: 1.125rem;
 }
 
 .new-ticket {
