@@ -2,6 +2,12 @@
 {% load static %}
 
 {% block content %}
+  <form action="{% url 'create_ticket' %}" method="post" class="widget-group">
+    {% csrf_token %}
+    <input type="text" name="title" size="80" class="title">
+    <input type="submit" class="enter-button new-ticket" value="新たなチケットを作成">
+  </form>
+
   <div class="widget-group">
     {% for ticket in ticket_list %}
     <div class="ticket-item">
@@ -10,10 +16,4 @@
     </div>
     {% endfor %}
   </div>
-
-  <form action="{% url 'create_ticket' %}" method="post" class="widget-group">
-    {% csrf_token %}
-    <input type="text" name="title" size="80">
-    <input type="submit" value="新たなチケットを作成">
-  </form>
 {% endblock %}

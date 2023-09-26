@@ -12,6 +12,15 @@ strong {
     font-weight: bold;
 }
 
+:focus-visible {
+    outline-style: solid;
+}
+
+input[type="text" i]:focus-visible {
+    outline-color: black;
+    outline-offset: 0;
+}
+
 body > hr {
     width: 100%;
     margin: 0.75rem 0;
@@ -148,7 +157,7 @@ main > * {
     background-color: var(--xkcd-light-grey);
 }
 
-button.upload {
+.enter-button {
     appearance: none;
     padding: 0.25rem 0.75rem;
     color: var(--xkcd-pale-grey);
@@ -157,11 +166,11 @@ button.upload {
     border-radius: 0.375rem;
 }
 
-button.upload:hover {
+.enter-button:hover {
     background-color: var(--xkcd-medium-grey);
 }
 
-button.upload:active {
+.enter-button:active {
     background-color: var(--xkcd-dark-grey);
 }
 
@@ -188,4 +197,15 @@ button.upload:active {
 .ticket-extra {
     font-size: 70%;
     color: var(--xkcd-medium-grey);
+}
+
+input[type="text" i].title {
+    appearance: none;
+    border: 1px solid black;
+    padding: 0.25em;
+    font-size: 1.125em;
+}
+
+.new-ticket {
+    margin-left: 0.5rem;
 }
