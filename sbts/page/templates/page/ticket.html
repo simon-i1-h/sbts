@@ -2,19 +2,18 @@
 {% load static %}
 
 {% block content %}
-  <div>
-    <div><strong>title, lastmod, key</strong></div>
+  <div class="widget-group">
     {% for ticket in ticket_list %}
-    <div>{{ ticket.title }}, {{ ticket.lastmod }}, <a href="{% url 'ticket_detail' ticket.key %}">link</a></div>
+    <div class="ticket-item">
+      <div><a href="{% url 'ticket_detail' ticket.key %}">{{ ticket.title }}</a></div>
+      <div class="ticket-extra">{{ ticket.lastmod }}更新</div>
+    </div>
     {% endfor %}
   </div>
 
-  <form action="{% url 'create_ticket' %}" method="post">
+  <form action="{% url 'create_ticket' %}" method="post" class="widget-group">
     {% csrf_token %}
-    <fieldset>
-      <legend>チケットタイトル</legend>
-      <input type="text" name="title" size="80">
-    </fieldset>
-    <input type="submit" value="create">
+    <input type="text" name="title" size="80">
+    <input type="submit" value="新たなチケットを作成">
   </form>
 {% endblock %}
