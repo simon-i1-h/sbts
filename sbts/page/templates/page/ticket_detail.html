@@ -2,19 +2,22 @@
 {% load static %}
 
 {% block content %}
-  <div>
-    <div><strong>comment, created, last_updated, is_modified, key</strong></div>
+  <div class="widget-group">
+    {% if comment_list %}
     {% for comment in comment_list %}
-    <div>{{ comment.comment }}, {{ comment.created }}, {{ comment.last_updated }},{{ comment.is_modified }},{{ comment.key }}</div>
+    <div id="comment-{{ comment.key }}" class="ticket-comment-box">
+      <div class="ticket-extra ticket-comment-extra">{{ comment.created }}</div>
+      <div class="ticket-comment">{{ comment.comment|linebreaksbr }}</div>
+    </div>
     {% endfor %}
+    {% else %}
+    <div>コメントはまだありません。</div>
+    {% endif %}
   </div>
 
-  <form action="{% url 'create_comment' ticket.key %}" method="post">
+  <form action="{% url 'create_comment' ticket.key %}" method="post" class="widget-group">
     {% csrf_token %}
-    <fieldset>
-      <legend>コメント</legend>
-      <textarea name="comment"></textarea>
-    </fieldset>
-    <input type="submit" value="create">
+    <div><textarea rows="8" name="comment" class="comment"></textarea></div>
+    <div><input type="submit" class="enter-button" value="コメント"></div>
   </form>
 {% endblock %}

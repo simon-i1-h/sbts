@@ -12,13 +12,8 @@ strong {
     font-weight: bold;
 }
 
-:focus-visible {
-    outline-style: solid;
-}
-
-input[type="text" i]:focus-visible {
-    outline-color: black;
-    outline-offset: 0;
+textarea {
+    resize: vertical;
 }
 
 body > hr {
@@ -210,6 +205,37 @@ input[type="text" i].title {
     font-size: 1.125rem;
 }
 
+input[type="text" i].title:focus-visible,
+textarea.comment:focus-visible {
+    outline: black solid 1px;
+}
+
 .new-ticket {
     margin-left: 0.5rem;
+}
+
+.ticket-comment-box {
+    border-style: solid;
+    border-color: var(--xkcd-light-grey);
+    border-width: 1px 1px 0 1px ;
+}
+
+.ticket-comment-box:last-child {
+    border-bottom-width: 1px;
+}
+
+.ticket-comment-extra {
+    padding: 0.25rem 0.5rem 0 0.5rem;
+}
+
+.ticket-comment {
+    padding: 0.75rem 1rem;
+}
+
+textarea.comment {
+    appearance: none;
+    box-sizing: border-box;
+    width: 100%;
+    border: 1px solid black;
+    padding: 0.25rem;
 }
