@@ -6,14 +6,16 @@
   <p>パスワードが正しくありません。再度お試しください。</p>
   {% endif %}
 
-  <form method="post" action="{% url 'login' %}">
+  <form method="post" action="{% url 'login' %}" class="widget-group login-form">
     {% csrf_token %}
 
-    ユーザーID:
-    {{ form.username }}
-    パスワード:
-    {{ form.password }}
-    <input type="submit" value="login">
+    <div class="login-group">
+      <div class="login-label">ユーザーID</div>
+      <div class="login-input">{{ form.username }}</div>
+      <div class="login-label">パスワード</div>
+      <div class="login-input">{{ form.password }}</div>
+      <div class="login-enter"><input type="submit" value="ログイン" class="enter-button"></div>
+    </div>
     {% if next %}
     <input type="hidden" name="next" value="{{ next }}">
     {% endif %}

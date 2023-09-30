@@ -198,7 +198,9 @@ main > * {
     color: var(--xkcd-medium-grey);
 }
 
-input[type="text" i].title {
+input[type="text" i].title,
+.login-input input[type="text" i],
+.login-input input[type="password" i] {
     appearance: none;
     border: 1px solid black;
     padding: 0.25rem;
@@ -206,6 +208,8 @@ input[type="text" i].title {
 }
 
 input[type="text" i].title:focus-visible,
+.login-input input[type="text" i]:focus-visible,
+.login-input input[type="password" i]:focus-visible,
 textarea.comment:focus-visible {
     outline: black solid 1px;
 }
@@ -238,4 +242,27 @@ textarea.comment {
     width: 100%;
     border: 1px solid black;
     padding: 0.25rem;
+}
+
+.login-form {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
+.login-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.login-label {
+    font-size: 0.8rem;
+}
+
+.login-input {
+    margin: 0.25rem;
+}
+
+.login-enter {
+    align-self: center;
 }
