@@ -12,6 +12,9 @@ strong {
     font-weight: bold;
 }
 
+p {
+    font-size: 1.125rem;
+}
 
 input[type="text" i], input[type="password" i] {
     appearance: none;
@@ -154,10 +157,6 @@ main > * {
 
 .login-enter {
     align-self: center;
-}
-
-p {
-    font-size: 1.125rem;
 }
 
 .ticket-item {
