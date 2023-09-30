@@ -213,6 +213,10 @@ main > * {
     grid-column: 3;
 }
 
+.file-list-header {
+    border-bottom: 1px solid var(--xkcd-light-grey);
+}
+
 .file-list-header,
 .file-item {
     padding: 0.5rem;
@@ -230,10 +234,6 @@ main > * {
 
 .file-item a:hover {
     text-decoration: underline;
-}
-
-.file-list-header {
-    border-bottom: 1px solid var(--xkcd-light-grey);
 }
 
 /*
