@@ -14,6 +14,8 @@ strong {
 
 textarea {
     resize: vertical;
+    appearance: none;
+    border: 1px solid black;
 }
 
 body {
@@ -187,11 +189,9 @@ main > * {
     padding: 0.75rem 1rem;
 }
 
-textarea.comment {
-    appearance: none;
+.ticket-comment-input {
     box-sizing: border-box;
     width: 100%;
-    border: 1px solid black;
     padding: 0.25rem;
 }
 
@@ -264,6 +264,6 @@ input[type="text" i].title,
 input[type="text" i].title:focus-visible,
 .login-input input[type="text" i]:focus-visible,
 .login-input input[type="password" i]:focus-visible,
-textarea.comment:focus-visible {
+.ticket-comment-input:focus-visible {
     outline: black solid 1px;
 }
