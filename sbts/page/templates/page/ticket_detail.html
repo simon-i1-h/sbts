@@ -17,7 +17,7 @@
 
   <form action="{% url 'create_comment' ticket.key %}" method="post" class="widget-group">
     {% csrf_token %}
-    <div><textarea rows="8" name="comment" class="ticket-detail-input"></textarea></div>
+    <div><textarea rows="8" name="comment"></textarea></div>
     <div><input type="submit" class="enter-button" value="コメント"></div>
   </form>
 {% endblock %}

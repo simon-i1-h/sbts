@@ -4,7 +4,7 @@
 {% block content %}
   <form action="{% url 'create_ticket' %}" method="post" class="widget-group">
     {% csrf_token %}
-    <input type="text" name="title" size="80" class="title">
+    <input type="text" name="title" size="80">
     <input type="submit" class="enter-button ticket-new" value="チケットを作成">
   </form>
 

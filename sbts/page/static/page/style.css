@@ -12,10 +12,28 @@ strong {
     font-weight: bold;
 }
 
-textarea {
-    resize: vertical;
+
+input[type="text" i], input[type="password" i] {
     appearance: none;
     border: 1px solid black;
+    padding: 0.25rem;
+    font-size: 1.125rem;
+}
+
+:is(input[type="text" i],
+    input[type="password" i],
+    textarea
+):focus-visible {
+    outline: black solid 1px;
+}
+
+textarea {
+    appearance: none;
+    resize: vertical;
+    border: 1px solid black;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 0.25rem;
 }
 
 body {
@@ -190,12 +208,6 @@ main > * {
     padding: 0.75rem 1rem;
 }
 
-.ticket-detail-input {
-    box-sizing: border-box;
-    width: 100%;
-    padding: 0.25rem;
-}
-
 .file-list {
     display: grid;
     grid-template-columns: 35% 25% 1fr;
@@ -251,20 +263,4 @@ main > * {
 /* 自分自身 */
 .file-item:hover {
     background-color: var(--xkcd-light-grey);
-}
-
-input[type="text" i].title,
-.login-input input[type="text" i],
-.login-input input[type="password" i] {
-    appearance: none;
-    border: 1px solid black;
-    padding: 0.25rem;
-    font-size: 1.125rem;
-}
-
-input[type="text" i].title:focus-visible,
-.login-input input[type="text" i]:focus-visible,
-.login-input input[type="password" i]:focus-visible,
-.ticket-detail-input:focus-visible {
-    outline: black solid 1px;
 }
