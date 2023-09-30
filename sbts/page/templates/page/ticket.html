@@ -12,7 +12,7 @@
     {% for ticket in ticket_list %}
     <div class="ticket-item">
       <div><a href="{% url 'ticket_detail' ticket.key %}">{{ ticket.title }}</a></div>
-      <div class="ticket-extra">{{ ticket.lastmod }}更新</div>
+      <div class="ticket-item-extra">{{ ticket.lastmod }}更新</div>
     </div>
     {% endfor %}
   </div>

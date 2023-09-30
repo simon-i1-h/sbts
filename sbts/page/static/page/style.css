@@ -162,7 +162,8 @@ main > * {
     text-decoration: underline;
 }
 
-.ticket-extra {
+.ticket-item-extra,
+.ticket-detail-item-extra {
     font-size: 0.7rem;
     color: var(--xkcd-medium-grey);
 }
@@ -171,25 +172,25 @@ main > * {
     margin-left: 0.5rem;
 }
 
-.ticket-comment-box {
+.ticket-detail-item {
     border-style: solid;
     border-color: var(--xkcd-light-grey);
-    border-width: 1px 1px 0 1px ;
+    border-width: 1px 1px 0 1px;
 }
 
-.ticket-comment-box:last-child {
+.ticket-detail-item:last-child {
     border-bottom-width: 1px;
 }
 
-.ticket-comment-extra {
+.ticket-detail-item-extra {
     padding: 0.25rem 0.5rem 0 0.5rem;
 }
 
-.ticket-comment {
+.ticket-detail-comment {
     padding: 0.75rem 1rem;
 }
 
-.ticket-comment-input {
+.ticket-detail-input {
     box-sizing: border-box;
     width: 100%;
     padding: 0.25rem;
@@ -264,6 +265,6 @@ input[type="text" i].title,
 input[type="text" i].title:focus-visible,
 .login-input input[type="text" i]:focus-visible,
 .login-input input[type="password" i]:focus-visible,
-.ticket-comment-input:focus-visible {
+.ticket-detail-input:focus-visible {
     outline: black solid 1px;
 }
