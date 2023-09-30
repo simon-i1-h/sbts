@@ -7,7 +7,7 @@
     {% for comment in comment_list %}
     <div id="comment-{{ comment.key }}" class="ticket-detail-item">
       <div class="ticket-detail-item-extra">{{ comment.created }}</div>
-      <div class="ticket-detail-comment">{{ comment.comment|linebreaksbr }}</div>
+      <div class="ticket-detail-comment">{{ comment.comment|urlize|linebreaksbr }}</div>
     </div>
     {% endfor %}
     {% else %}
