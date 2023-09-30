@@ -165,7 +165,7 @@ main > * {
     color: var(--xkcd-medium-grey);
 }
 
-.new-ticket {
+.ticket-new {
     margin-left: 0.5rem;
 }
 
