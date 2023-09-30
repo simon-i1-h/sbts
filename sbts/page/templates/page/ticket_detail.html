@@ -11,13 +11,13 @@
     </div>
     {% endfor %}
     {% else %}
-    <div>コメントはまだありません。</div>
+    <p>コメントはまだありません。</p>
     {% endif %}
   </div>
 
   <form action="{% url 'create_comment' ticket.key %}" method="post" class="widget-group">
     {% csrf_token %}
-    <div><textarea rows="8" name="comment"></textarea></div>
+    <textarea rows="8" name="comment"></textarea>
     <div><input type="submit" class="enter-button" value="コメント"></div>
   </form>
 {% endblock %}
