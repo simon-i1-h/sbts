@@ -71,7 +71,8 @@ main > * {
     flex-wrap: nowrap;
 }
 
-.header-navitem a {
+.header-navtab a,
+.header-authn a {
     color: var(--xkcd-dark-grey);
 }
 
