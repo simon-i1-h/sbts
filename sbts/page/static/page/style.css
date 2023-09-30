@@ -36,11 +36,6 @@ main > * {
     grid-column: 2;
 }
 
-.widget-group {
-    margin-top: 0.5rem;
-    margin-bottom: 0.5rem;
-}
-
 .header-nav {
     display: flex;
     align-items: center;
@@ -96,8 +91,108 @@ main > * {
     border: 1px solid var(--xkcd-light-grey);
 }
 
+.widget-group {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.enter-button {
+    appearance: none;
+    padding: 0.25rem 0.75rem;
+    color: var(--xkcd-pale-grey);
+    background-color: var(--xkcd-grey);
+    border: 1px solid var(--xkcd-dark-grey);
+    border-radius: 0.375rem;
+}
+
+.enter-button:hover {
+    background-color: var(--xkcd-medium-grey);
+}
+
+.enter-button:active {
+    background-color: var(--xkcd-dark-grey);
+}
+
+.login-form {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
+.login-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.login-label {
+    font-size: 0.8rem;
+}
+
+.login-input {
+    margin: 0.25rem;
+}
+
+.login-enter {
+    align-self: center;
+}
+
 .project-readme {
     font-size: 1.125rem;
+}
+
+.ticket-item {
+    border-style: solid;
+    border-color: var(--xkcd-light-grey);
+    border-width: 0 0 1px 0;
+    padding: 0 1.5rem 0.25rem 1.5rem;
+}
+
+.ticket-item:nth-child(n+2) {
+    margin-top: 0.5rem;
+}
+
+.ticket-item a {
+    text-decoration: none;
+    color: black;
+}
+
+.ticket-item a:hover {
+    text-decoration: underline;
+}
+
+.ticket-extra {
+    font-size: 0.7rem;
+    color: var(--xkcd-medium-grey);
+}
+
+.new-ticket {
+    margin-left: 0.5rem;
+}
+
+.ticket-comment-box {
+    border-style: solid;
+    border-color: var(--xkcd-light-grey);
+    border-width: 1px 1px 0 1px ;
+}
+
+.ticket-comment-box:last-child {
+    border-bottom-width: 1px;
+}
+
+.ticket-comment-extra {
+    padding: 0.25rem 0.5rem 0 0.5rem;
+}
+
+.ticket-comment {
+    padding: 0.75rem 1rem;
+}
+
+textarea.comment {
+    appearance: none;
+    box-sizing: border-box;
+    width: 100%;
+    border: 1px solid black;
+    padding: 0.25rem;
 }
 
 .file-list {
@@ -157,48 +252,6 @@ main > * {
     background-color: var(--xkcd-light-grey);
 }
 
-.enter-button {
-    appearance: none;
-    padding: 0.25rem 0.75rem;
-    color: var(--xkcd-pale-grey);
-    background-color: var(--xkcd-grey);
-    border: 1px solid var(--xkcd-dark-grey);
-    border-radius: 0.375rem;
-}
-
-.enter-button:hover {
-    background-color: var(--xkcd-medium-grey);
-}
-
-.enter-button:active {
-    background-color: var(--xkcd-dark-grey);
-}
-
-.ticket-item {
-    border-style: solid;
-    border-color: var(--xkcd-light-grey);
-    border-width: 0 0 1px 0;
-    padding: 0 1.5rem 0.25rem 1.5rem;
-}
-
-.ticket-item:nth-child(n+2) {
-    margin-top: 0.5rem;
-}
-
-.ticket-item a {
-    text-decoration: none;
-    color: black;
-}
-
-.ticket-item a:hover {
-    text-decoration: underline;
-}
-
-.ticket-extra {
-    font-size: 0.7rem;
-    color: var(--xkcd-medium-grey);
-}
-
 input[type="text" i].title,
 .login-input input[type="text" i],
 .login-input input[type="password" i] {
@@ -213,57 +266,4 @@ input[type="text" i].title:focus-visible,
 .login-input input[type="password" i]:focus-visible,
 textarea.comment:focus-visible {
     outline: black solid 1px;
-}
-
-.new-ticket {
-    margin-left: 0.5rem;
-}
-
-.ticket-comment-box {
-    border-style: solid;
-    border-color: var(--xkcd-light-grey);
-    border-width: 1px 1px 0 1px ;
-}
-
-.ticket-comment-box:last-child {
-    border-bottom-width: 1px;
-}
-
-.ticket-comment-extra {
-    padding: 0.25rem 0.5rem 0 0.5rem;
-}
-
-.ticket-comment {
-    padding: 0.75rem 1rem;
-}
-
-textarea.comment {
-    appearance: none;
-    box-sizing: border-box;
-    width: 100%;
-    border: 1px solid black;
-    padding: 0.25rem;
-}
-
-.login-form {
-    display: flex;
-    align-items: center;
-    flex-direction: column;
-}
-
-.login-group {
-    display: flex;
-    flex-direction: column;
-}
-
-.login-label {
-    font-size: 0.8rem;
-}
-
-.login-input {
-    margin: 0.25rem;
-}
-
-.login-enter {
-    align-self: center;
 }
