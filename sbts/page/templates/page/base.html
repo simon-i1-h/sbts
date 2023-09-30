@@ -8,7 +8,7 @@
 <body>
 <header>
   <nav class="header-nav">
-    <div class="header-top"><a href="{% url 'top' %}" ><strong>sbts</strong></a></div>
+    <div class="header-top"><a href="{% url 'top' %}" ><b>sbts</b></a></div>
 
     <ul class="header-navlist">
       <li class="header-navtab{% if selected_tab == 'ticket' %} header-navtab-selected{% endif %}"><a href="{% url 'ticket' %}">チケット</a></li>
@@ -24,7 +24,7 @@
     </div>
   </nav>
 </header>
-<hr class="header-bottom">
+<div class="header-bottom"></div>
 <main>{% block content %}
 {% endblock %}  </main>
 </body>

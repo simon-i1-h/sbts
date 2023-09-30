@@ -14,9 +14,9 @@
   </form>
 
   <div class="file-list widget-group">
-    <div class="file-list-header file-list-name"><strong>名前</strong></div>
-    <div class="file-list-header file-list-lastmod"><strong>最終更新</strong></div>
-    <div class="file-list-header file-list-size"><strong>大きさ</strong></div>
+    <div class="file-list-header file-list-name"><b>名前</b></div>
+    <div class="file-list-header file-list-lastmod"><b>最終更新</b></div>
+    <div class="file-list-header file-list-size"><b>大きさ</b></div>
     {% for file in file_list %}
     <div class="file-item file-list-name"><a href="{% url 'file:blob' file.key %}" title="{{ file.name }}">{{ file.name }}</a></div>
     <div class="file-item file-list-lastmod"><span title="{{ file.lastmod }}">{{ file.lastmod }}</span></div>
