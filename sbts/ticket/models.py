@@ -25,6 +25,4 @@ class Comment(models.Model):
     key = models.UUIDField(primary_key=True, default=uuid.uuid4)
     comment = models.TextField()
     created_at = models.DateTimeField()
-    last_updated = models.DateTimeField()
-    is_modified = models.BooleanField(default=False)
     ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE)

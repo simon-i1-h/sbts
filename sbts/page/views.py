@@ -94,11 +94,11 @@ class TicketPageView(BaseTicketPageView):
 
         ctx['ticket_list'] = []
         for t in Ticket.objects.sorted_tickets():
-            lastcomment = t.comment_set.order_by('-last_updated').first()
+            lastcomment = t.comment_set.order_by('-created_at').first()
             if lastcomment is None:
                 lastmod = t.created_at
             else:
-                lastmod = lastcomment.last_updated
+                lastmod = lastcomment.created_at
 
             ctx['ticket_list'].append({
                 'title': t.title,
@@ -129,8 +129,6 @@ class TicketDetailPageView(BaseTicketPageView):
             {
                 'comment': c.comment,
                 'created': c.created_at,
-                'last_updated': c.last_updated,
-                'is_modified': c.is_modified,
                 'key': c.key,
             }
             for c in ticket.sorted_comments()
@@ -148,8 +146,7 @@ class CreateCommentView(LoginRequiredView):
         t = Ticket.objects.get(key=kwargs['key'])
         t.comment_set.create(key=uuid.uuid4(),
                              comment=request.POST['comment'],
-                             created_at=now,
-                             last_updated=now)
+                             created_at=now)
 
         url = reverse('ticket_detail', kwargs={
             'key': kwargs['key'],
