@@ -16,12 +16,6 @@ textarea {
     resize: vertical;
 }
 
-body > hr {
-    width: 100%;
-    margin: 0.75rem 0;
-    border: 1px solid var(--xkcd-light-grey);
-}
-
 body {
     font-family: sans-serif;
     display: grid;
@@ -94,6 +88,12 @@ main > * {
 
 .header-authn a:hover {
     text-decoration: underline;
+}
+
+.header-bottom {
+    width: 100%;
+    margin: 0.75rem 0;
+    border: 1px solid var(--xkcd-light-grey);
 }
 
 .project-readme {
