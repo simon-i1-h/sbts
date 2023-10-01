@@ -20,10 +20,12 @@
 
   <div class="file-list widget-group">
     <div class="file-list-header file-list-name"><b>名前</b></div>
-    <div class="file-list-header file-list-lastmod"><b>最終更新</b></div>
+    <div class="file-list-header file-list-username"><b>作成者</b></div>
+    <div class="file-list-header file-list-lastmod"><b>作成日</b></div>
     <div class="file-list-header file-list-size"><b>大きさ</b></div>
     {% for file in file_list %}
     <div class="file-item file-list-name"><a href="{% url 'file:blob' file.key %}" title="{{ file.name }}">{{ file.name }}</a></div>
+    <div class="file-item file-list-username"><span title="{{ file.username }}">{{ file.username }}</span></div>
     <div class="file-item file-list-lastmod"><span title="{{ file.lastmod }}">{{ file.lastmod }}</span></div>
     <div class="file-item file-list-size"><span title="{{ file.size|pretty_nbytes }}">{{ file.size|pretty_nbytes }}</span></div>
     {% endfor %}

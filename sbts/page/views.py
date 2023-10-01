@@ -43,10 +43,11 @@ class FilePageView(BaseFilePageView):
             {
                 'name': f.name,
                 'lastmod': f.last_modified,
+                'username': f.username,
                 'size': f.size,
                 'key': str(f.key),
             }
-            for f in UploadedFile.objects.all().order_by('name', 'last_modified')
+            for f in UploadedFile.objects.all().order_by('name', 'last_modified', 'key')
         ]
         ctx['constant_map'] = {
             'url_map': {

@@ -18,6 +18,7 @@ class UploadedFile(models.Model):
                     name=name,
                     last_modified=last_modified,
                     size=uploader.size,
+                    username=username,
                     **kwargs)
                 uploader.delete()
 
@@ -32,6 +33,7 @@ class UploadedFile(models.Model):
     name = models.CharField(max_length=255)
     last_modified = models.DateTimeField()
     size = models.BigIntegerField()
+    username = models.CharField(max_length=150)
 
 
 # 内部用

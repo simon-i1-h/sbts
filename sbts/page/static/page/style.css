@@ -218,19 +218,23 @@ main > * {
 
 .file-list {
     display: grid;
-    grid-template-columns: 35% 25% 1fr;
+    grid-template-columns: 35% 20% 25% 1fr;
 }
 
 .file-list-name {
     grid-column: 1;
 }
 
-.file-list-lastmod {
+.file-list-username {
     grid-column: 2;
 }
 
-.file-list-size {
+.file-list-lastmod {
     grid-column: 3;
+}
+
+.file-list-size {
+    grid-column: 4;
 }
 
 .file-list-header {
@@ -260,14 +264,21 @@ main > * {
  * マウスポインタを要素の上にかざしたとき、同じ行すべての要素を選択する
  */
 /* 1列目 */
-.file-item:nth-child(3n+1):has(+ .file-item:hover),
-.file-item:nth-child(3n+1):has(+ .file-item + .file-item:hover),
+.file-item:nth-child(4n+1):has(+ .file-item:hover),
+.file-item:nth-child(4n+1):has(+ .file-item + .file-item:hover),
+.file-item:nth-child(4n+1):has(+ .file-item + .file-item + .file-item:hover),
 /* 2列目 */
-.file-item:hover + .file-item:nth-child(3n+2),
-.file-item:nth-child(3n+2):has(+ .file-item:hover),
+.file-item:hover + .file-item:nth-child(4n+2),
+.file-item:nth-child(4n+2):has(+ .file-item:hover),
+.file-item:nth-child(4n+2):has(+ .file-item + .file-item:hover),
 /* 3列目 */
-.file-item:hover + .file-item + .file-item:nth-child(3n),
-.file-item:hover + .file-item:nth-child(3n),
+.file-item:hover + .file-item + .file-item:nth-child(4n+3),
+.file-item:hover + .file-item:nth-child(4n+3),
+.file-item:nth-child(4n+3):has(+ .file-item:hover),
+/* 4列目 */
+.file-item:hover + .file-item + .file-item + .file-item:nth-child(4n),
+.file-item:hover + .file-item + .file-item:nth-child(4n),
+.file-item:hover + .file-item:nth-child(4n),
 /* 自分自身 */
 .file-item:hover {
     background-color: var(--xkcd-light-grey);
