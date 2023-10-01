@@ -2,6 +2,8 @@
 {% load static %}
 {% load pretty_filters %}
 
+{% block title %}ファイル - sbts{% endblock %}
+
 {% block content %}
   <form action="{% url 'create_file' %}" method="post" class="widget-group" id="uploadform">
     {% csrf_token %}

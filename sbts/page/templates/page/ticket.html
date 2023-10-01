@@ -1,6 +1,8 @@
 {% extends 'page/base.html' %}
 {% load static %}
 
+{% block title %}チケット - sbts{% endblock %}
+
 {% block content %}
   <form action="{% url 'create_ticket' %}" method="post" class="widget-group">
     {% csrf_token %}
