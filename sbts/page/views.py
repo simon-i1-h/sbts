@@ -116,12 +116,14 @@ class TicketDetailPageView(BaseTicketPageView):
             {
                 'comment': c.comment,
                 'created': c.created_at,
+                'username': c.username,
                 'key': c.key,
             }
             for c in ticket.sorted_comments()
         ]
         ctx['ticket'] = {
             'key': ticket.key,
+            'title': ticket.title,
         }
 
         return ctx
