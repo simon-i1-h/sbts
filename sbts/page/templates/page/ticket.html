@@ -4,11 +4,13 @@
 {% block title %}チケット - sbts{% endblock %}
 
 {% block content %}
+  {% if user.is_authenticated %}
   <form action="{% url 'create_ticket' %}" method="post" class="widget-group">
     {% csrf_token %}
     <input type="text" name="title" size="80">
     <span class="enter-button ticket-new"><input type="submit" value="チケットを作成"></span>
   </form>
+  {% endif %}
 
   <div class="widget-group">
     {% for ticket in ticket_list %}

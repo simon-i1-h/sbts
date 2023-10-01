@@ -12,29 +12,25 @@ from sbts.ticket.models import Ticket
 import uuid
 
 
-class LoginRequiredTemplateView(LoginRequiredMixin, TemplateView):
-    pass
-
-
 class LoginRequiredView(LoginRequiredMixin, View):
     pass
 
 
-class BaseFilePageView(LoginRequiredTemplateView):
+class BaseFilePageView(TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['selected_tab'] = 'file'
         return ctx
 
 
-class BaseTicketPageView(LoginRequiredTemplateView):
+class BaseTicketPageView(TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['selected_tab'] = 'ticket'
         return ctx
 
 
-class TopPageView(LoginRequiredTemplateView):
+class TopPageView(TemplateView):
     template_name = 'page/top.html'
 
 
@@ -145,6 +141,8 @@ class CreateCommentView(LoginRequiredView):
 
 class LoginPageView(LoginView):
     template_name = 'page/login.html'
+    # TODO: social media fingerprinting
+    # https://docs.djangoproject.com/en/4.2/topics/auth/default/#django.contrib.auth.views.LoginView
     redirect_authenticated_user = True
 
 

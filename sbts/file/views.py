@@ -2,7 +2,6 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import FileResponse, Http404
 from django.views import View
-from django.contrib.auth.mixins import LoginRequiredMixin
 from rest_framework.parsers import BaseParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -24,10 +23,6 @@ class StreamRequestView(APIView):
     parser_classes = [StreamParser]
 
 
-class LoginRequiredView(LoginRequiredMixin, View):
-    pass
-
-
 class UploadView(StreamRequestView):
     def post(self, request, format=None):
         key = upload_file(
@@ -38,7 +33,7 @@ class UploadView(StreamRequestView):
         return Response({'key': key})
 
 
-class BlobView(LoginRequiredView):
+class BlobView(View):
     def get(self, request, *args, **kwargs):
         s3client = boto3.client('s3', endpoint_url=settings.S3_ENDPOINT)
         try:

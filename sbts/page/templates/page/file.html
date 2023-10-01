@@ -5,6 +5,7 @@
 {% block title %}ファイル - sbts{% endblock %}
 
 {% block content %}
+  {% if user.is_authenticated %}
   <form action="{% url 'create_file' %}" method="post" class="widget-group" id="uploadform">
     {% csrf_token %}
     <input type="hidden" name="blobkey">
@@ -15,6 +16,7 @@
     <input type="file" style="display: none;" id="uploadfile">{# ファイルの中身はフォームで送信されない(REST APIで送信) #}
     <span class="enter-button"><button type="button" id="uploadbutton">＋アップロード</button></span>
   </form>
+  {% endif %}
 
   <div class="file-list widget-group">
     <div class="file-list-header file-list-name"><b>名前</b></div>
