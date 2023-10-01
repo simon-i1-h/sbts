@@ -6,7 +6,7 @@ import uuid
 class Ticket(models.Model):
     class Manager(models.Manager):
         def sorted_tickets(self):
-            return self.order_by('created_at')
+            return self.order_by('-created_at')
 
     class Meta:
         default_manager_name = 'objects'
