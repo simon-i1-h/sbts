@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -e
+set -eu
 
 CFGDIR="$(cd "$(dirname "$0")" && pwd)/config"
 export PGSERVICEFILE="$CFGDIR/.pg_service.conf"

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
+set -eu
 
 MINIO_ENDPOINT=http://minio:9000
 
