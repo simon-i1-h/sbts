@@ -11,7 +11,7 @@ def pretty_nbytes(nbytes):
         nbytes /= 1024
         i += 1
 
-    if nbytes % 1:
-        return f'{nbytes:,.1f} {units[i]}'
-    else:
+    if f'{nbytes:.1f}'.endswith('.0'):
         return f'{nbytes:,.0f} {units[i]}'
+    else:
+        return f'{nbytes:,.1f} {units[i]}'

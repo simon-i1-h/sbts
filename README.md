@@ -10,3 +10,9 @@ cp sbts_public_custom-sample.py sbts_public_custom.py
 docker compose build
 docker compose up -d
 ```
+
+## テスト
+
+```
+./run_tests_from_host.sh
+```

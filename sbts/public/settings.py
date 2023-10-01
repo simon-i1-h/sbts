@@ -59,6 +59,23 @@ DATABASES = {
     }
 }
 
+# TODO: Django 4.2ではテストでpg_service.confを利用できない。不完全な
+# 対処だが、回避策で直接設定している。
+# https://docs.djangoproject.com/en/4.2/ref/databases/#postgresql-connection-settings
+# https://code.djangoproject.com/ticket/33685
+import sys
+if 'test' in sys.argv:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'postgres',
+            'USER': 'postgres',
+            'PASSWORD': 'pw',
+            'HOST': 'pg',
+            'PORT': 5432,
+        }
+    }
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {
