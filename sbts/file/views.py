@@ -1,6 +1,6 @@
 from django.conf import settings
-from django.http import FileResponse
-from django.utils import timezone
+from django.core.exceptions import ObjectDoesNotExist
+from django.http import FileResponse, Http404
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
 from rest_framework.parsers import BaseParser
@@ -40,11 +40,16 @@ class UploadView(StreamRequestView):
 
 class BlobView(LoginRequiredView):
     def get(self, request, *args, **kwargs):
-        fname = UploadedFile.objects.get(key=kwargs['key']).name
         s3client = boto3.client('s3', endpoint_url=settings.S3_ENDPOINT)
-        s3obj = s3client.get_object(
-            Bucket=settings.S3_BUCKET_FILE,
-            Key=str(kwargs['key']))
+        try:
+            fname = UploadedFile.objects.get(key=kwargs['key']).name
+            s3obj = s3client.get_object(
+                Bucket=settings.S3_BUCKET_FILE,
+                Key=str(kwargs['key']))
+        except (ObjectDoesNotExist,
+                s3client.exceptions.NoSuchKey,
+                s3client.exceptions.InvalidObjectState):
+            raise Http404()
 
         resp = FileResponse(
             s3obj['Body'],
