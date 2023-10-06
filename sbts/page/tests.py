@@ -1,6 +1,8 @@
-from django.test import TestCase
+from django.contrib.auth.models import AnonymousUser, User
+from django.test import RequestFactory, TestCase
 
 from .templatetags.pretty_filters import pretty_nbytes
+from .views import TicketPageView
 
 
 class PrettyNbytesTest(TestCase):
@@ -108,3 +110,19 @@ class PrettyNbytesTest(TestCase):
         複合: 1024以上のPiB、端数
         '''
         self.assertEqual(pretty_nbytes(42 * (1024 ** 6) + 900 * (1024 ** 4)), '43,008.9 PiB')
+
+
+class TicketPageViewTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user_shimon = User.objects.create_user(
+            'shimon', 'shimon@example.com', 'pw')
+
+    def setUp(self):
+        self.req_factory = RequestFactory()
+
+    def test_no_ticket(self):
+        req = self.req_factory.get('/')
+        req.user = AnonymousUser()
+        resp = TicketPageView.as_view()(req)
+        self.assertQuerysetEqual(resp.context_data['ticket_list'], [])
