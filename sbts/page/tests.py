@@ -125,4 +125,4 @@ class TicketPageViewTest(TestCase):
         req = self.req_factory.get('/')
         req.user = AnonymousUser()
         resp = TicketPageView.as_view()(req)
-        self.assertQuerysetEqual(resp.context_data['ticket_list'], [])
+        self.assertQuerySetEqual(resp.context_data['ticket_list'], [])
