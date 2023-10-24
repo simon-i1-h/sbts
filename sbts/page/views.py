@@ -75,21 +75,7 @@ class TicketPageView(BaseTicketPageView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-
-        ctx['ticket_list'] = []
-        for t in Ticket.objects.sorted_tickets():
-            lastcomment = t.comment_set.order_by('-created_at').first()
-            if lastcomment is None:
-                lastmod = t.created_at
-            else:
-                lastmod = lastcomment.created_at
-
-            ctx['ticket_list'].append({
-                'title': t.title,
-                'lastmod': lastmod,
-                'key': t.key,
-            })
-
+        ctx['ticket_list'] = Ticket.objects.sorted_tickets()
         return ctx
 
 

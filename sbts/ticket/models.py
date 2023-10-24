@@ -20,6 +20,13 @@ class Ticket(models.Model):
     def sorted_comments(self):
         return self.comment_set.order_by('created_at')
 
+    @property
+    def lastmod(self):
+        lastcomment = self.comment_set.order_by('-created_at').first()
+        if lastcomment is not None:
+            return lastcomment.created_at
+        return self.created_at
+
 
 class Comment(models.Model):
     key = models.UUIDField(primary_key=True, default=uuid.uuid4)
