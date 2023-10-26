@@ -22,9 +22,9 @@ class Ticket(models.Model):
 
     @property
     def lastmod(self):
-        lastcomment = self.comment_set.order_by('-created_at').first()
-        if lastcomment is not None:
-            return lastcomment.created_at
+        lastcommented_at = self.comment_set.aggregate(models.Max('created_at'))['created_at__max']
+        if lastcommented_at is not None:
+            return lastcommented_at
         return self.created_at
 
 
