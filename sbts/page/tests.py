@@ -125,6 +125,7 @@ class TicketPageViewTest(TestCase):
 
     def test_empty(self):
         req = self.req_factory.get('/')
+        req.user = AnonymousUser()
         resp = TicketPageView.as_view()(req)
         self.assertQuerySetEqual(resp.context_data['ticket_list'], [])
         self.assertEqual(resp.status_code, 200)
@@ -134,6 +135,7 @@ class TicketPageViewTest(TestCase):
         t1 = Ticket.objects.create(title='a', created_at=dt1)
 
         req = self.req_factory.get('/')
+        req.user = AnonymousUser()
         resp = TicketPageView.as_view()(req)
         self.assertQuerySetEqual(resp.context_data['ticket_list'], [t1])
         self.assertEqual(resp.status_code, 200)
@@ -149,6 +151,7 @@ class TicketPageViewTest(TestCase):
         t2 = Ticket.objects.create(title='a', created_at=dt2)
 
         req = self.req_factory.get('/')
+        req.user = AnonymousUser()
         resp = TicketPageView.as_view()(req)
         self.assertQuerySetEqual(resp.context_data['ticket_list'], [t2, t1])
         self.assertEqual(resp.status_code, 200)
@@ -166,6 +169,7 @@ class TicketPageViewTest(TestCase):
         t3 = Ticket.objects.create(title='a', created_at=dt3)
 
         req = self.req_factory.get('/')
+        req.user = AnonymousUser()
         resp = TicketPageView.as_view()(req)
         self.assertQuerySetEqual(resp.context_data['ticket_list'], [t2, t3, t1])
         self.assertEqual(resp.status_code, 200)
@@ -196,6 +200,7 @@ class TicketPageViewTest(TestCase):
         t3.comment_set.create(comment='c', created_at=c3)
 
         req = self.req_factory.get('/')
+        req.user = AnonymousUser()
         resp = TicketPageView.as_view()(req)
         self.assertQuerySetEqual(resp.context_data['ticket_list'], [t2, t3, t1])
         self.assertEqual(resp.context_data['ticket_list'][0].lastmod, c2)
@@ -235,6 +240,7 @@ class TicketPageViewTest(TestCase):
         t3.comment_set.create(comment='f', created_at=c3_2)
 
         req = self.req_factory.get('/')
+        req.user = AnonymousUser()
         resp = TicketPageView.as_view()(req)
         self.assertQuerySetEqual(resp.context_data['ticket_list'], [t2, t3, t1])
         self.assertEqual(resp.context_data['ticket_list'][0].lastmod, c2_2)
@@ -280,6 +286,7 @@ class TicketPageViewTest(TestCase):
         t3.comment_set.create(comment='i', created_at=c3_3)
 
         req = self.req_factory.get('/')
+        req.user = AnonymousUser()
         resp = TicketPageView.as_view()(req)
         self.assertQuerySetEqual(resp.context_data['ticket_list'], [t2, t3, t1])
         self.assertEqual(resp.context_data['ticket_list'][0].lastmod, c2_1)
@@ -312,6 +319,7 @@ class TicketPageViewTest(TestCase):
         t3.comment_set.create(comment='c', created_at=c3_2)
 
         req = self.req_factory.get('/')
+        req.user = AnonymousUser()
         resp = TicketPageView.as_view()(req)
         self.assertQuerySetEqual(resp.context_data['ticket_list'], [t2, t3, t1])
         self.assertEqual(resp.context_data['ticket_list'][0].lastmod, dt2)
@@ -325,6 +333,7 @@ class TicketPageViewTest(TestCase):
         '''
 
         req = self.req_factory.options('/')
+        req.user = AnonymousUser()
         resp = TicketPageView.as_view()(req)
         self.assertEqual(resp.status_code, 200)
 
@@ -334,6 +343,7 @@ class TicketPageViewTest(TestCase):
         '''
 
         req = self.req_factory.head('/')
+        req.user = AnonymousUser()
         resp = TicketPageView.as_view()(req)
         self.assertEqual(resp.status_code, 200)
 
@@ -343,6 +353,7 @@ class TicketPageViewTest(TestCase):
         '''
 
         req = self.req_factory.post('/')
+        req.user = AnonymousUser()
         resp = TicketPageView.as_view()(req)
         self.assertEqual(resp.status_code, 405)
 
@@ -352,6 +363,7 @@ class TicketPageViewTest(TestCase):
         '''
 
         req = self.req_factory.put('/')
+        req.user = AnonymousUser()
         resp = TicketPageView.as_view()(req)
         self.assertEqual(resp.status_code, 405)
 
@@ -361,6 +373,7 @@ class TicketPageViewTest(TestCase):
         '''
 
         req = self.req_factory.patch('/')
+        req.user = AnonymousUser()
         resp = TicketPageView.as_view()(req)
         self.assertEqual(resp.status_code, 405)
 
@@ -369,5 +382,6 @@ class TicketPageViewTest(TestCase):
         基本的なアクションはGETに限る
         '''
         req = self.req_factory.delete('/')
+        req.user = AnonymousUser()
         resp = TicketPageView.as_view()(req)
         self.assertEqual(resp.status_code, 405)
