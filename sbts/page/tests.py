@@ -7,8 +7,9 @@ from django.test import RequestFactory, TestCase
 from django.urls import reverse
 
 from .templatetags.pretty_filters import pretty_nbytes
-from .views import TicketPageView, CreateTicketView, TicketDetailPageView
-from sbts.ticket.models import Ticket
+from .views import TicketPageView, CreateTicketView, TicketDetailPageView, \
+    CreateCommentView
+from sbts.ticket.models import Ticket, Comment
 
 
 class PrettyNbytesTest(TestCase):
@@ -735,4 +736,246 @@ class TicketDetailPageViewTest(TestCase):
         dt1 = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
         t1 = Ticket.objects.create(title='ticket 1', created_at=dt1)
         resp = TicketDetailPageView.as_view()(req, key=t1.key)
+        self.assertEqual(resp.status_code, 405)
+
+
+class CreateCommentViewTest(TestCase):
+    '''
+    コメントを期待通り作れるか確認する。各期待しないパラメータについて
+    は、原則他のすべてのパラメータは期待の値にして検証する。
+    '''
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user_shimon = User.objects.create_user(
+            'shimon', 'shimon@example.com', 'pw')
+
+    def setUp(self):
+        self.req_factory = RequestFactory()
+
+    def test_anon(self):
+        '''
+        未ログインはコメント不可
+        '''
+
+        dt1 = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
+        t1 = Ticket.objects.create(title='ticket 1', created_at=dt1)
+
+        req = self.req_factory.post('/', data={'comment': 'c'})
+        req.user = AnonymousUser()
+
+        with self.assertRaises(PermissionDenied):
+            CreateCommentView.as_view()(req, key=t1.key)
+        self.assertQuerySetEqual(t1.comment_set.all(), [])
+
+    def test_ok(self):
+        dt1 = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
+        t1 = Ticket.objects.create(title='ticket 1', created_at=dt1)
+
+        self.assertQuerySetEqual(t1.comment_set.all(), [])
+
+        c1_comment = 'c'
+        req = self.req_factory.post('/', data={'comment': c1_comment})
+        req.user = self.user_shimon
+
+        resp = CreateCommentView.as_view()(req, key=t1.key)
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp['Location'], reverse('ticket_detail', kwargs={'key': t1.key}))
+        self.assertQuerySetEqual(t1.comment_set.all(), [t1.comment_set.get(comment=c1_comment)])
+
+    def test_extra_data(self):
+        '''
+        POSTで余計なデータが来た場合は余計なデータを無視して成功
+        '''
+
+        dt1 = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
+        t1 = Ticket.objects.create(title='ticket 1', created_at=dt1)
+
+        self.assertQuerySetEqual(t1.comment_set.all(), [])
+
+        c1_comment = 'c'
+        req = self.req_factory.post('/', data={'comment': c1_comment, 'extra': 'extra'})
+        req.user = self.user_shimon
+
+        resp = CreateCommentView.as_view()(req, key=t1.key)
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp['Location'], reverse('ticket_detail', kwargs={'key': t1.key}))
+        self.assertQuerySetEqual(t1.comment_set.all(), [t1.comment_set.get(comment=c1_comment)])
+
+    def test_empty_comment(self):
+        '''
+        コメントが空文字列の場合は成功
+        '''
+
+        dt1 = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
+        t1 = Ticket.objects.create(title='ticket 1', created_at=dt1)
+
+        self.assertQuerySetEqual(t1.comment_set.all(), [])
+
+        c1_comment = ''
+        req = self.req_factory.post('/', data={'comment': c1_comment})
+        req.user = self.user_shimon
+
+        resp = CreateCommentView.as_view()(req, key=t1.key)
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp['Location'], reverse('ticket_detail', kwargs={'key': t1.key}))
+        self.assertQuerySetEqual(t1.comment_set.all(), [t1.comment_set.get(comment=c1_comment)])
+
+    def test_invalid_ticket(self):
+        '''
+        存在しないチケットを指定した場合は例外を送出
+        '''
+
+        id = uuid.UUID('6b1ec55f-3e41-4780-aa71-0fbbbe4e0d5d')
+        self.assertQuerySetEqual(Ticket.objects.all(), [])
+        self.assertQuerySetEqual(Comment.objects.all(), [])
+
+        c1_comment = 'c'
+        req = self.req_factory.post('/', data={'comment': c1_comment})
+        req.user = self.user_shimon
+        with self.assertRaises(ObjectDoesNotExist):
+            CreateCommentView.as_view()(req, key=id)
+        self.assertQuerySetEqual(Comment.objects.all(), [])
+
+    def test_no_comment(self):
+        '''
+        コメントが無い場合は例外を送出
+        '''
+
+        dt1 = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
+        t1 = Ticket.objects.create(title='ticket 1', created_at=dt1)
+
+        self.assertQuerySetEqual(t1.comment_set.all(), [])
+
+        req = self.req_factory.post('/', data={})
+        req.user = self.user_shimon
+
+        with self.assertRaises(Exception):
+            CreateCommentView.as_view()(req, key=t1.key)
+        self.assertQuerySetEqual(t1.comment_set.all(), [])
+
+    def test_too_long_comment(self):
+        '''
+        コメントが長すぎるときは成功
+        '''
+
+        dt1 = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
+        t1 = Ticket.objects.create(title='ticket 1', created_at=dt1)
+
+        self.assertQuerySetEqual(t1.comment_set.all(), [])
+
+        c1_comment = 'c' * 1024 * 1024
+        req = self.req_factory.post('/', data={'comment': c1_comment})
+        req.user = self.user_shimon
+
+        resp = CreateCommentView.as_view()(req, key=t1.key)
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp['Location'], reverse('ticket_detail', kwargs={'key': t1.key}))
+        self.assertQuerySetEqual(t1.comment_set.all(), [t1.comment_set.get(comment=c1_comment)])
+
+    def test_invalid_ticket_and_too_long_comment(self):
+        '''
+        存在しないチケットを指定し、コメントが長すぎる場合は例外を送出
+        '''
+
+        id = uuid.UUID('6b1ec55f-3e41-4780-aa71-0fbbbe4e0d5d')
+        self.assertQuerySetEqual(Ticket.objects.all(), [])
+        self.assertQuerySetEqual(Comment.objects.all(), [])
+
+        c1_comment = 'c' * 1024 * 1024
+        req = self.req_factory.post('/', data={'comment': c1_comment})
+        req.user = self.user_shimon
+        with self.assertRaises(ObjectDoesNotExist):
+            CreateCommentView.as_view()(req, key=id)
+        self.assertQuerySetEqual(Comment.objects.all(), [])
+
+    def test_options(self):
+        '''
+        基本的なアクションはPOSTに限る
+        '''
+
+        dt1 = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
+        t1 = Ticket.objects.create(title='ticket 1', created_at=dt1)
+        c1_comment = 'c'
+        req = self.req_factory.options('/', data={'comment': c1_comment})
+        req.user = self.user_shimon
+        resp = CreateCommentView.as_view()(req, key=t1.key)
+        self.assertEqual(resp.status_code, 200)
+
+    def test_head(self):
+        '''
+        基本的なアクションはPOSTに限る
+        '''
+
+        dt1 = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
+        t1 = Ticket.objects.create(title='ticket 1', created_at=dt1)
+        c1_comment = 'c'
+        req = self.req_factory.head('/', data={'comment': c1_comment})
+        req.user = self.user_shimon
+        resp = CreateCommentView.as_view()(req, key=t1.key)
+        self.assertEqual(resp.status_code, 405)
+
+    def test_get(self):
+        '''
+        基本的なアクションはPOSTに限る
+        '''
+
+        dt1 = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
+        t1 = Ticket.objects.create(title='ticket 1', created_at=dt1)
+        c1_comment = 'c'
+        req = self.req_factory.get('/', data={'comment': c1_comment})
+        req.user = self.user_shimon
+        resp = CreateCommentView.as_view()(req, key=t1.key)
+        self.assertEqual(resp.status_code, 405)
+
+    def test_put(self):
+        '''
+        基本的なアクションはPOSTに限る
+        '''
+
+        dt1 = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
+        t1 = Ticket.objects.create(title='ticket 1', created_at=dt1)
+        c1_comment = 'c'
+        req = self.req_factory.put('/', data={'comment': c1_comment})
+        req.user = self.user_shimon
+        resp = CreateCommentView.as_view()(req, key=t1.key)
+        self.assertEqual(resp.status_code, 405)
+
+    def test_patch(self):
+        '''
+        基本的なアクションはPOSTに限る
+        '''
+
+        dt1 = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
+        t1 = Ticket.objects.create(title='ticket 1', created_at=dt1)
+        c1_comment = 'c'
+        req = self.req_factory.patch('/', data={'comment': c1_comment})
+        req.user = self.user_shimon
+        resp = CreateCommentView.as_view()(req, key=t1.key)
+        self.assertEqual(resp.status_code, 405)
+
+    def test_delete(self):
+        '''
+        基本的なアクションはPOSTに限る
+        '''
+
+        dt1 = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
+        t1 = Ticket.objects.create(title='ticket 1', created_at=dt1)
+        c1_comment = 'c'
+        req = self.req_factory.delete('/', data={'comment': c1_comment})
+        req.user = self.user_shimon
+        resp = CreateCommentView.as_view()(req, key=t1.key)
+        self.assertEqual(resp.status_code, 405)
+
+    def test_trace(self):
+        '''
+        基本的なアクションはPOSTに限る
+        '''
+
+        dt1 = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
+        t1 = Ticket.objects.create(title='ticket 1', created_at=dt1)
+        c1_comment = 'c'
+        req = self.req_factory.trace('/', data={'comment': c1_comment})
+        req.user = self.user_shimon
+        resp = CreateCommentView.as_view()(req, key=t1.key)
         self.assertEqual(resp.status_code, 405)
