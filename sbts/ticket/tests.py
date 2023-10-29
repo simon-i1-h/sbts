@@ -10,6 +10,7 @@ class TicketSortedTicketsTest(TestCase):
         '''
         チケットがないなら、当然空集合を返す
         '''
+
         self.assertQuerySetEqual(Ticket.objects.sorted_tickets(), [])
 
     def test_1(self):
@@ -27,6 +28,7 @@ class TicketSortedTicketsTest(TestCase):
         '''
         チケットは常に降順で返される
         '''
+
         dt1 = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
         t1 = Ticket.objects.create(title='ticket 1', created_at=dt1)
         dt2 = datetime.datetime.fromisoformat('2023-10-24T23:00:00Z')
@@ -49,3 +51,60 @@ class TicketSortedTicketsTest(TestCase):
 
         tickets = Ticket.objects.sorted_tickets()
         self.assertQuerySetEqual(tickets, [t2, t1, t3])
+
+
+class TicketSortedCommentsTest(TestCase):
+    def test_0(self):
+        '''
+        コメントがないなら、当然空集合を返す
+        '''
+
+        dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
+        t1 = Ticket.objects.create(title='ticket', created_at=dt)
+
+        self.assertQuerySetEqual(t1.sorted_comments(), [])
+
+    def test_1(self):
+        '''
+        コメントが1つなら、単にそれだけを返す
+        '''
+
+        dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
+        t1 = Ticket.objects.create(title='ticket', created_at=dt)
+
+        c1_dt = datetime.datetime.fromisoformat('2023-10-24T09:00:00Z')
+        c1 = t1.comment_set.create(comment='a', created_at=c1_dt)
+
+        self.assertQuerySetEqual(t1.sorted_comments(), [c1])
+
+    def test_2(self):
+        '''
+        コメントは常に昇順で返される
+        '''
+
+        dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
+        t1 = Ticket.objects.create(title='ticket', created_at=dt)
+
+        c1_dt = datetime.datetime.fromisoformat('2023-10-24T09:00:00Z')
+        c1 = t1.comment_set.create(comment='a', created_at=c1_dt)
+        c2_dt = datetime.datetime.fromisoformat('2023-10-24T08:00:00Z')
+        c2 = t1.comment_set.create(comment='b', created_at=c2_dt)
+
+        self.assertQuerySetEqual(t1.sorted_comments(), [c2, c1])
+
+    def test_3(self):
+        '''
+        コメントは常に昇順で返される
+        '''
+
+        dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
+        t1 = Ticket.objects.create(title='ticket', created_at=dt)
+
+        c1_dt = datetime.datetime.fromisoformat('2023-10-24T09:00:00Z')
+        c1 = t1.comment_set.create(comment='a', created_at=c1_dt)
+        c2_dt = datetime.datetime.fromisoformat('2023-10-24T08:00:00Z')
+        c2 = t1.comment_set.create(comment='b', created_at=c2_dt)
+        c3_dt = datetime.datetime.fromisoformat('2023-10-24T08:30:00Z')
+        c3 = t1.comment_set.create(comment='c', created_at=c3_dt)
+
+        self.assertQuerySetEqual(t1.sorted_comments(), [c2, c3, c1])
