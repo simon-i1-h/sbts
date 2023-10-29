@@ -95,19 +95,8 @@ class TicketDetailPageView(BaseTicketPageView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ticket = Ticket.objects.get(key=kwargs['key'])
-        ctx['comment_list'] = [
-            {
-                'comment': c.comment,
-                'created': c.created_at,
-                'username': c.username,
-                'key': c.key,
-            }
-            for c in ticket.sorted_comments()
-        ]
-        ctx['ticket'] = {
-            'key': ticket.key,
-            'title': ticket.title,
-        }
+        ctx['comment_list'] = ticket.sorted_comments()
+        ctx['ticket'] = ticket
 
         return ctx
 

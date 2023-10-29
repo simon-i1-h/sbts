@@ -1,12 +1,13 @@
 import datetime
+import uuid
 
 from django.contrib.auth.models import AnonymousUser, User
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
 
 from .templatetags.pretty_filters import pretty_nbytes
-from .views import TicketPageView, CreateTicketView
+from .views import TicketPageView, CreateTicketView, TicketDetailPageView
 from sbts.ticket.models import Ticket
 
 
@@ -427,10 +428,6 @@ class CreateTicketViewTest(TestCase):
         self.assertQuerySetEqual(Ticket.objects.all(), [])
 
     def test_ok(self):
-        '''
-        期待のパラメータを渡すと成功
-        '''
-
         self.assertQuerySetEqual(Ticket.objects.all(), [])
 
         t1_title = 't1'
@@ -570,4 +567,172 @@ class CreateTicketViewTest(TestCase):
         req = self.req_factory.trace('/')
         req.user = self.user_shimon
         resp = CreateTicketView.as_view()(req)
+        self.assertEqual(resp.status_code, 405)
+
+
+class TicketDetailPageViewTest(TestCase):
+    '''
+    チケットの詳細が期待通りの順序で一覧表示されることを確認する。
+    '''
+
+    def setUp(self):
+        self.req_factory = RequestFactory()
+
+    def test_invalid_ticket(self):
+        '''
+        指定したチケットが存在しなければ例外を送出
+        '''
+
+        id = uuid.UUID('6b1ec55f-3e41-4780-aa71-0fbbbe4e0d5d')
+        self.assertQuerySetEqual(Ticket.objects.all(), [])
+
+        req = self.req_factory.get('/')
+        req.user = AnonymousUser()
+        with self.assertRaises(ObjectDoesNotExist):
+            TicketDetailPageView.as_view()(req, key=id)
+
+    def test_empty(self):
+        dt1 = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
+        t1 = Ticket.objects.create(title='ticket 1', created_at=dt1)
+
+        req = self.req_factory.get('/')
+        req.user = AnonymousUser()
+        resp = TicketDetailPageView.as_view()(req, key=t1.key)
+        self.assertQuerySetEqual(resp.context_data['comment_list'], [])
+        self.assertEqual(resp.status_code, 200)
+
+    def test_one(self):
+        dt1 = datetime.datetime.fromisoformat('2023-10-22T00:00:00Z')
+        t1 = Ticket.objects.create(title='ticket 1', created_at=dt1)
+
+        c1_dt = datetime.datetime.fromisoformat('2023-10-26T15:00:00Z')
+        c1 = t1.comment_set.create(comment='a', created_at=c1_dt)
+
+        req = self.req_factory.get('/')
+        req.user = AnonymousUser()
+        resp = TicketDetailPageView.as_view()(req, key=t1.key)
+        self.assertEqual(resp.context_data['ticket'], t1)
+        self.assertQuerySetEqual(resp.context_data['comment_list'], [c1])
+        self.assertEqual(resp.status_code, 200)
+
+    def test_two(self):
+        '''
+        コメントの一覧はコメントの作成日時の昇順になる。
+        '''
+        dt1 = datetime.datetime.fromisoformat('2023-10-22T00:00:00Z')
+        t1 = Ticket.objects.create(title='ticket 1', created_at=dt1)
+
+        c1_dt = datetime.datetime.fromisoformat('2023-10-26T20:00:00Z')
+        c1 = t1.comment_set.create(comment='a', created_at=c1_dt)
+        c2_dt = datetime.datetime.fromisoformat('2023-10-26T15:00:00Z')
+        c2 = t1.comment_set.create(comment='b', created_at=c2_dt)
+
+        req = self.req_factory.get('/')
+        req.user = AnonymousUser()
+        resp = TicketDetailPageView.as_view()(req, key=t1.key)
+        self.assertEqual(resp.context_data['ticket'], t1)
+        self.assertQuerySetEqual(resp.context_data['comment_list'], [c2, c1])
+        self.assertEqual(resp.status_code, 200)
+
+    def test_three(self):
+        '''
+        コメントの一覧はコメントの作成日時の昇順になる。
+        '''
+        dt1 = datetime.datetime.fromisoformat('2023-10-22T00:00:00Z')
+        t1 = Ticket.objects.create(title='ticket 1', created_at=dt1)
+
+        c1_dt = datetime.datetime.fromisoformat('2023-10-26T20:00:00Z')
+        c1 = t1.comment_set.create(comment='a', created_at=c1_dt)
+        c2_dt = datetime.datetime.fromisoformat('2023-10-26T09:00:00Z')
+        c2 = t1.comment_set.create(comment='b', created_at=c2_dt)
+        c3_dt = datetime.datetime.fromisoformat('2023-10-26T15:00:00Z')
+        c3 = t1.comment_set.create(comment='c', created_at=c3_dt)
+
+        req = self.req_factory.get('/')
+        req.user = AnonymousUser()
+        resp = TicketDetailPageView.as_view()(req, key=t1.key)
+        self.assertEqual(resp.context_data['ticket'], t1)
+        self.assertQuerySetEqual(resp.context_data['comment_list'], [c2, c3, c1])
+        self.assertEqual(resp.status_code, 200)
+
+    def test_options(self):
+        '''
+        基本的なアクションはGETに限る
+        '''
+
+        req = self.req_factory.options('/')
+        req.user = AnonymousUser()
+        dt1 = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
+        t1 = Ticket.objects.create(title='ticket 1', created_at=dt1)
+        resp = TicketDetailPageView.as_view()(req, key=t1.key)
+        self.assertEqual(resp.status_code, 200)
+
+    def test_head(self):
+        '''
+        基本的なアクションはGETに限る
+        '''
+
+        req = self.req_factory.head('/')
+        req.user = AnonymousUser()
+        dt1 = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
+        t1 = Ticket.objects.create(title='ticket 1', created_at=dt1)
+        resp = TicketDetailPageView.as_view()(req, key=t1.key)
+        self.assertEqual(resp.status_code, 200)
+
+    def test_post(self):
+        '''
+        基本的なアクションはGETに限る
+        '''
+
+        req = self.req_factory.post('/')
+        req.user = AnonymousUser()
+        dt1 = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
+        t1 = Ticket.objects.create(title='ticket 1', created_at=dt1)
+        resp = TicketDetailPageView.as_view()(req, key=t1.key)
+        self.assertEqual(resp.status_code, 405)
+
+    def test_put(self):
+        '''
+        基本的なアクションはGETに限る
+        '''
+
+        req = self.req_factory.put('/')
+        req.user = AnonymousUser()
+        dt1 = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
+        t1 = Ticket.objects.create(title='ticket 1', created_at=dt1)
+        resp = TicketDetailPageView.as_view()(req, key=t1.key)
+        self.assertEqual(resp.status_code, 405)
+
+    def test_patch(self):
+        '''
+        基本的なアクションはGETに限る
+        '''
+
+        req = self.req_factory.patch('/')
+        req.user = AnonymousUser()
+        dt1 = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
+        t1 = Ticket.objects.create(title='ticket 1', created_at=dt1)
+        resp = TicketDetailPageView.as_view()(req, key=t1.key)
+        self.assertEqual(resp.status_code, 405)
+
+    def test_delete(self):
+        '''
+        基本的なアクションはGETに限る
+        '''
+        req = self.req_factory.delete('/')
+        req.user = AnonymousUser()
+        dt1 = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
+        t1 = Ticket.objects.create(title='ticket 1', created_at=dt1)
+        resp = TicketDetailPageView.as_view()(req, key=t1.key)
+        self.assertEqual(resp.status_code, 405)
+
+    def test_trace(self):
+        '''
+        基本的なアクションはGETに限る
+        '''
+        req = self.req_factory.trace('/')
+        req.user = AnonymousUser()
+        dt1 = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
+        t1 = Ticket.objects.create(title='ticket 1', created_at=dt1)
+        resp = TicketDetailPageView.as_view()(req, key=t1.key)
         self.assertEqual(resp.status_code, 405)
