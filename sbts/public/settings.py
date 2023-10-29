@@ -1,3 +1,5 @@
+import sys
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = None
 
@@ -59,11 +61,10 @@ DATABASES = {
     }
 }
 
-# TODO: Django 4.2ではテストでpg_service.confを利用できない。不完全な
-# 対処だが、回避策で直接設定している。
+# TODO: Django 4.2ではテストでpg_service.confを利用できない。現状は、
+# 不完全な対処だが、回避策で直接設定している。
 # https://docs.djangoproject.com/en/4.2/ref/databases/#postgresql-connection-settings
 # https://code.djangoproject.com/ticket/33685
-import sys
 if 'test' in sys.argv:
     DATABASES = {
         'default': {
@@ -110,19 +111,22 @@ S3_BUCKET_FILE = 'sbtsfile'
 S3_ENDPOINT = 'http://minio:9000'
 
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler'
+# TODO: テスト時は無効にすべき。現状は、不完全だが回避策的な分岐をして
+# いる。
+if 'test' not in sys.argv:
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'handlers': {
+            'console': {
+                'class': 'logging.StreamHandler'
+            }
+        },
+        'root': {
+            'handlers': ['console'],
+            'level': 'INFO',
         }
-    },
-    'root': {
-        'handlers': ['console'],
-        'level': 'INFO',
     }
-}
 
 
 LOGIN_REDIRECT_URL = 'top'
