@@ -13,7 +13,7 @@ import uuid
 
 
 class LoginRequiredView(LoginRequiredMixin, View):
-    pass
+    raise_exception = True
 
 
 class BaseFilePageView(TemplateView):

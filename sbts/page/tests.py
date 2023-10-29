@@ -1,10 +1,12 @@
 import datetime
 
 from django.contrib.auth.models import AnonymousUser, User
+from django.core.exceptions import PermissionDenied
 from django.test import RequestFactory, TestCase
+from django.urls import reverse
 
 from .templatetags.pretty_filters import pretty_nbytes
-from .views import TicketPageView
+from .views import TicketPageView, CreateTicketView
 from sbts.ticket.models import Ticket
 
 
@@ -384,4 +386,188 @@ class TicketPageViewTest(TestCase):
         req = self.req_factory.delete('/')
         req.user = AnonymousUser()
         resp = TicketPageView.as_view()(req)
+        self.assertEqual(resp.status_code, 405)
+
+    def test_trace(self):
+        '''
+        基本的なアクションはGETに限る
+        '''
+        req = self.req_factory.trace('/')
+        req.user = AnonymousUser()
+        resp = TicketPageView.as_view()(req)
+        self.assertEqual(resp.status_code, 405)
+
+
+class CreateTicketViewTest(TestCase):
+    '''
+    チケットを期待通り作れるか確認する。各期待しないパラメータについて
+    は、他のすべてのパラメータは期待の値にして検証する。
+    '''
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user_shimon = User.objects.create_user(
+            'shimon', 'shimon@example.com', 'pw')
+
+    def setUp(self):
+        self.req_factory = RequestFactory()
+
+    def test_anon(self):
+        '''
+        未ログインはチケット作成不可
+        '''
+
+        self.assertQuerySetEqual(Ticket.objects.all(), [])
+
+        req = self.req_factory.post('/', data={'title': 't1'})
+        req.user = AnonymousUser()
+
+        with self.assertRaises(PermissionDenied):
+            CreateTicketView.as_view()(req)
+        self.assertQuerySetEqual(Ticket.objects.all(), [])
+
+    def test_ok(self):
+        '''
+        期待のパラメータを渡すと成功
+        '''
+
+        self.assertQuerySetEqual(Ticket.objects.all(), [])
+
+        t1_title = 't1'
+        req = self.req_factory.post('/', data={'title': t1_title})
+        req.user = self.user_shimon
+
+        resp = CreateTicketView.as_view()(req)
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp['Location'], reverse('ticket'))
+        self.assertQuerySetEqual(Ticket.objects.all(), [Ticket.objects.get(title=t1_title)])
+
+    def test_extra_data(self):
+        '''
+        POSTで余計なデータが来た場合は余計なデータを無視して成功
+        '''
+
+        self.assertQuerySetEqual(Ticket.objects.all(), [])
+
+        t1_title = 't1'
+        req = self.req_factory.post('/', data={'title': t1_title, 'extra': 'extra'})
+        req.user = self.user_shimon
+
+        resp = CreateTicketView.as_view()(req)
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp['Location'], reverse('ticket'))
+        self.assertQuerySetEqual(Ticket.objects.all(), [Ticket.objects.get(title=t1_title)])
+
+    def test_empty_title(self):
+        '''
+        タイトルが空文字列の場合は成功
+        '''
+
+        self.assertQuerySetEqual(Ticket.objects.all(), [])
+
+        t1_title = ''
+        req = self.req_factory.post('/', data={'title': t1_title})
+        req.user = self.user_shimon
+        resp = CreateTicketView.as_view()(req)
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp['Location'], reverse('ticket'))
+        self.assertQuerySetEqual(Ticket.objects.all(), [Ticket.objects.get(title=t1_title)])
+
+    def test_too_long_title(self):
+        '''
+        タイトルがすごく長い場合は成功
+        '''
+
+        self.assertQuerySetEqual(Ticket.objects.all(), [])
+
+        t1_title = 't' * 1024
+        req = self.req_factory.post('/', data={'title': t1_title})
+        req.user = self.user_shimon
+        resp = CreateTicketView.as_view()(req)
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp['Location'], reverse('ticket'))
+        self.assertQuerySetEqual(Ticket.objects.all(), [Ticket.objects.get(title=t1_title)])
+
+    def test_no_title(self):
+        '''
+        タイトルがない場合は例外を送出
+        '''
+
+        self.assertQuerySetEqual(Ticket.objects.all(), [])
+
+        req = self.req_factory.post('/', data={})
+        req.user = self.user_shimon
+
+        with self.assertRaises(Exception):
+            CreateTicketView.as_view()(req)
+        self.assertQuerySetEqual(Ticket.objects.all(), [])
+
+    def test_options(self):
+        '''
+        基本的なアクションはPOSTに限る
+        '''
+
+        req = self.req_factory.options('/')
+        req.user = self.user_shimon
+        resp = CreateTicketView.as_view()(req)
+        self.assertEqual(resp.status_code, 200)
+
+    def test_head(self):
+        '''
+        基本的なアクションはPOSTに限る
+        '''
+
+        req = self.req_factory.head('/')
+        req.user = self.user_shimon
+        resp = CreateTicketView.as_view()(req)
+        self.assertEqual(resp.status_code, 405)
+
+    def test_get(self):
+        '''
+        基本的なアクションはPOSTに限る
+        '''
+
+        req = self.req_factory.get('/')
+        req.user = self.user_shimon
+        resp = CreateTicketView.as_view()(req)
+        self.assertEqual(resp.status_code, 405)
+
+    def test_put(self):
+        '''
+        基本的なアクションはPOSTに限る
+        '''
+
+        req = self.req_factory.put('/')
+        req.user = self.user_shimon
+        resp = CreateTicketView.as_view()(req)
+        self.assertEqual(resp.status_code, 405)
+
+    def test_patch(self):
+        '''
+        基本的なアクションはPOSTに限る
+        '''
+
+        req = self.req_factory.patch('/')
+        req.user = self.user_shimon
+        resp = CreateTicketView.as_view()(req)
+        self.assertEqual(resp.status_code, 405)
+
+    def test_delete(self):
+        '''
+        基本的なアクションはPOSTに限る
+        '''
+
+        req = self.req_factory.delete('/')
+        req.user = self.user_shimon
+        resp = CreateTicketView.as_view()(req)
+        self.assertEqual(resp.status_code, 405)
+
+    def test_trace(self):
+        '''
+        基本的なアクションはPOSTに限る
+        '''
+
+        req = self.req_factory.trace('/')
+        req.user = self.user_shimon
+        resp = CreateTicketView.as_view()(req)
         self.assertEqual(resp.status_code, 405)
