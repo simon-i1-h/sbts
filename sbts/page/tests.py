@@ -125,6 +125,7 @@ class TicketPageViewTest(TestCase):
     '''
 
     def setUp(self):
+        super().setUp()
         self.req_factory = RequestFactory()
 
     def test_empty(self):
@@ -408,10 +409,12 @@ class CreateTicketViewTest(TestCase):
 
     @classmethod
     def setUpTestData(cls):
+        super().setUpTestData()
         cls.user_shimon = User.objects.create_user(
             'shimon', 'shimon@example.com', 'pw')
 
     def setUp(self):
+        super().setUp()
         self.req_factory = RequestFactory()
 
     def test_anon(self):
@@ -577,6 +580,7 @@ class TicketDetailPageViewTest(TestCase):
     '''
 
     def setUp(self):
+        super().setUp()
         self.req_factory = RequestFactory()
 
     def test_invalid_ticket(self):
@@ -747,10 +751,12 @@ class CreateCommentViewTest(TestCase):
 
     @classmethod
     def setUpTestData(cls):
+        super().setUpTestData()
         cls.user_shimon = User.objects.create_user(
             'shimon', 'shimon@example.com', 'pw')
 
     def setUp(self):
+        super().setUp()
         self.req_factory = RequestFactory()
 
     def test_anon(self):
