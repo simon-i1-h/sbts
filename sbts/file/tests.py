@@ -79,7 +79,7 @@ class UploadFileTest(ObjectStorageTestCase):
         マルチパートアップロードのチャンク+1の大きさのデータ
         '''
 
-        content = random.Random(0).randbytes(settings.S3_CHUNK_SIZE + 1)
+        content = random.Random(1).randbytes(settings.S3_CHUNK_SIZE + 1)
         file = io.BytesIO(content)
         key = upload_file(file, self.user_shimon.username)
 
