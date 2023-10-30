@@ -109,6 +109,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 S3_BUCKET_FILE = 'sbtsfile'
 S3_ENDPOINT = 'http://minio:9000'
+S3_CHUNK_SIZE = 8 * (1024 ** 2)  # 8MiB
 
 
 # TODO: テスト時は無効にすべき。現状は、不完全だが回避策的な分岐をして

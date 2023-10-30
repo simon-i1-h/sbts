@@ -72,7 +72,7 @@ class S3Uploader(models.Model):
             'Parts': []
         }
         partnum = 1  # 1 ~ 10,000
-        while chunk := file.read(8 * (1024 ** 2)):
+        while chunk := file.read(settings.S3_CHUNK_SIZE):
             part = s3client.upload_part(
                 Body=chunk,
                 Bucket=settings.S3_BUCKET_FILE,
