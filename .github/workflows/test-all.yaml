@@ -1,0 +1,19 @@
+name: 全てのテストを実行
+
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 設定ファイルのコピー
+        run: |
+          cp -r config-sample config &&
+          cp sbts_public_custom-sample.py sbts_public_custom.py
+      - name: Dockerイメージのビルド
+        run: docker compose build
+      - name: Dockerコンテナの起動
+        run: docker compose up -d
+      - name: テストの実行
+        run: ./run_tests_from_host.sh
