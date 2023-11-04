@@ -26,7 +26,7 @@
     {% for file in file_list %}
     <div class="file-item file-list-name"><a href="{% url 'file:blob' file.key %}" title="{{ file.name }}">{{ file.name }}</a></div>
     <div class="file-item file-list-username"><span title="{{ file.username }}">{{ file.username }}</span></div>
-    <div class="file-item file-list-lastmod"><span title="{{ file.lastmod }}">{{ file.lastmod }}</span></div>
+    <div class="file-item file-list-lastmod"><span title="{{ file.last_modified }}">{{ file.last_modified }}</span></div>
     <div class="file-item file-list-size"><span title="{{ file.size|pretty_nbytes }}">{{ file.size|pretty_nbytes }}</span></div>
     {% endfor %}
   </div>

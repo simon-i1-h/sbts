@@ -8,8 +8,9 @@ from django.urls import reverse
 
 from .templatetags.pretty_filters import pretty_nbytes
 from .views import TicketPageView, CreateTicketView, TicketDetailPageView, \
-    CreateCommentView
+    CreateCommentView, FilePageView
 from sbts.ticket.models import Ticket, Comment
+from sbts.file.models import UploadedFile
 
 
 class PrettyNbytesTest(TestCase):
@@ -984,4 +985,177 @@ class CreateCommentViewTest(TestCase):
         req = self.req_factory.trace('/', data={'comment': c1_comment})
         req.user = self.user_shimon
         resp = CreateCommentView.as_view()(req, key=t1.key)
+        self.assertEqual(resp.status_code, 405)
+
+
+class FilePageViewTest(TestCase):
+    '''
+    ファイルが期待通りの順序で一覧表示されることを確認する。
+    '''
+
+    def setUp(self):
+        super().setUp()
+        self.req_factory = RequestFactory()
+
+    def test_empty(self):
+        req = self.req_factory.get('/')
+        req.user = AnonymousUser()
+        resp = FilePageView.as_view()(req)
+        self.assertQuerySetEqual(resp.context_data['file_list'], [])
+        self.assertEqual(resp.context_data['constant_map'],
+                         {'url_map': {name: reverse(name) for name in ['file:upload']}})
+        self.assertEqual(resp.status_code, 200)
+
+    def test_one(self):
+        un = 'shimon'
+        dt1 = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
+        f1 = UploadedFile.objects.create(name='f', last_modified=dt1, size='0', username=un)
+
+        req = self.req_factory.get('/')
+        req.user = AnonymousUser()
+        resp = FilePageView.as_view()(req)
+        self.assertQuerySetEqual(resp.context_data['file_list'], [f1])
+        self.assertEqual(resp.context_data['constant_map'],
+                         {'url_map': {name: reverse(name) for name in ['file:upload']}})
+        self.assertEqual(resp.status_code, 200)
+
+    def test_two(self):
+        '''
+        ファイルは、ファイル名、最終変更日時、キーの順番で昇順にソート
+        される。
+        '''
+
+        un = 'shimon'
+        dt1 = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
+        f1 = UploadedFile.objects.create(name='g', last_modified=dt1, size='0', username=un)
+        dt2 = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
+        f2 = UploadedFile.objects.create(name='f', last_modified=dt2, size='0', username=un)
+
+        req = self.req_factory.get('/')
+        req.user = AnonymousUser()
+        resp = FilePageView.as_view()(req)
+        self.assertQuerySetEqual(resp.context_data['file_list'], [f2, f1])
+        self.assertEqual(resp.context_data['constant_map'],
+                         {'url_map': {name: reverse(name) for name in ['file:upload']}})
+        self.assertEqual(resp.status_code, 200)
+
+    def test_three(self):
+        '''
+        ファイルは、ファイル名、最終変更日時、キーの順番で昇順にソート
+        される。
+        '''
+
+        un = 'shimon'
+        dt1 = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
+        f1 = UploadedFile.objects.create(name='g', last_modified=dt1, size='0', username=un)
+        dt2 = datetime.datetime.fromisoformat('2023-10-10T23:50:00Z')
+        f2 = UploadedFile.objects.create(name='f', last_modified=dt2, size='0', username=un)
+        dt3 = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
+        f3 = UploadedFile.objects.create(name='f', last_modified=dt3, size='0', username=un)
+
+        req = self.req_factory.get('/')
+        req.user = AnonymousUser()
+        resp = FilePageView.as_view()(req)
+        self.assertQuerySetEqual(resp.context_data['file_list'], [f2, f3, f1])
+        self.assertEqual(resp.context_data['constant_map'],
+                         {'url_map': {name: reverse(name) for name in ['file:upload']}})
+        self.assertEqual(resp.status_code, 200)
+
+    def test_eight(self):
+        '''
+        ファイルは、ファイル名、最終変更日時、キーの順番で昇順にソート
+        される。
+        '''
+
+        un = 'shimon'
+        dt1 = datetime.datetime.fromisoformat('2023-10-15T23:50:00Z')
+        k1 = uuid.UUID('6b1ec55f-3e41-4780-aa71-0fbbbe4e0d5d')
+        f1 = UploadedFile.objects.create(key=k1, name='g', last_modified=dt1, size='0', username=un)
+        k2 = uuid.UUID('6b1ec55f-3e41-4780-aa71-0fbbbe4e0d53')
+        dt2 = datetime.datetime.fromisoformat('2023-10-15T23:50:00Z')
+        f2 = UploadedFile.objects.create(key=k2, name='g', last_modified=dt2, size='1', username=un)
+        k3 = uuid.UUID('6b1ec55f-3e41-4780-aa71-0fbbbe4e0d5f')
+        dt3 = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
+        f3 = UploadedFile.objects.create(key=k3, name='f', last_modified=dt3, size='2', username=un)
+        k4 = uuid.UUID('6b1ec55f-3e41-4780-aa71-0fbbbe4e0d59')
+        dt4 = datetime.datetime.fromisoformat('2023-10-08T23:20:00Z')
+        f4 = UploadedFile.objects.create(key=k4, name='g', last_modified=dt4, size='3', username=un)
+        k5 = uuid.UUID('6b1ec55f-3e41-4780-aa71-0fbbbe4e0d51')
+        dt5 = datetime.datetime.fromisoformat('2023-10-10T23:50:00Z')
+        f5 = UploadedFile.objects.create(key=k5, name='f', last_modified=dt5, size='4', username=un)
+        k6 = uuid.UUID('6b1ec55f-3e41-4780-aa71-0fbbbe4e0d55')
+        dt6 = datetime.datetime.fromisoformat('2023-10-08T23:20:00Z')
+        f6 = UploadedFile.objects.create(key=k6, name='g', last_modified=dt6, size='5', username=un)
+        k7 = uuid.UUID('6b1ec55f-3e41-4780-aa71-0fbbbe4e0d52')
+        dt7 = datetime.datetime.fromisoformat('2023-10-10T23:50:00Z')
+        f7 = UploadedFile.objects.create(key=k7, name='f', last_modified=dt7, size='6', username=un)
+        k8 = uuid.UUID('6b1ec55f-3e41-4780-aa71-0fbbbe4e0d5a')
+        dt8 = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
+        f8 = UploadedFile.objects.create(key=k8, name='f', last_modified=dt8, size='7', username=un)
+
+        req = self.req_factory.get('/')
+        req.user = AnonymousUser()
+        resp = FilePageView.as_view()(req)
+        self.assertQuerySetEqual(resp.context_data['file_list'],
+                                 [f5, f7, f8, f3, f6, f4, f2, f1])
+        self.assertEqual(resp.context_data['constant_map'],
+                         {'url_map': {name: reverse(name) for name in ['file:upload']}})
+        self.assertEqual(resp.status_code, 200)
+
+    def test_head(self):
+        '''
+        基本的なアクションはGETに限る
+        '''
+
+        req = self.req_factory.head('/')
+        req.user = AnonymousUser()
+        resp = FilePageView.as_view()(req)
+        self.assertEqual(resp.status_code, 200)
+
+    def test_post(self):
+        '''
+        基本的なアクションはGETに限る
+        '''
+
+        req = self.req_factory.post('/')
+        req.user = AnonymousUser()
+        resp = FilePageView.as_view()(req)
+        self.assertEqual(resp.status_code, 405)
+
+    def test_put(self):
+        '''
+        基本的なアクションはGETに限る
+        '''
+
+        req = self.req_factory.put('/')
+        req.user = AnonymousUser()
+        resp = FilePageView.as_view()(req)
+        self.assertEqual(resp.status_code, 405)
+
+    def test_patch(self):
+        '''
+        基本的なアクションはGETに限る
+        '''
+
+        req = self.req_factory.patch('/')
+        req.user = AnonymousUser()
+        resp = FilePageView.as_view()(req)
+        self.assertEqual(resp.status_code, 405)
+
+    def test_delete(self):
+        '''
+        基本的なアクションはGETに限る
+        '''
+        req = self.req_factory.delete('/')
+        req.user = AnonymousUser()
+        resp = FilePageView.as_view()(req)
+        self.assertEqual(resp.status_code, 405)
+
+    def test_trace(self):
+        '''
+        基本的なアクションはGETに限る
+        '''
+        req = self.req_factory.trace('/')
+        req.user = AnonymousUser()
+        resp = FilePageView.as_view()(req)
         self.assertEqual(resp.status_code, 405)
