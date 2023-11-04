@@ -11,6 +11,7 @@ class UploadedFile(models.Model):
                 uploader = S3Uploader.objects.get(
                     id=key,
                     status=S3Uploader.COMPLETED,
+                    # 他のユーザーのブロブは参照できない
                     username=username)
                 # S3のオブジェクトの所有者をS3UploaderからUploadedFileに移動
                 file = self.create(
