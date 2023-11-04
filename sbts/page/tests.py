@@ -1,16 +1,20 @@
 import datetime
+import random
+import string
 import uuid
 
+from django.db import DataError
 from django.contrib.auth.models import AnonymousUser, User
-from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
+from django.core.exceptions import PermissionDenied, ObjectDoesNotExist, \
+    ValidationError
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
 
 from .templatetags.pretty_filters import pretty_nbytes
 from .views import TicketPageView, CreateTicketView, TicketDetailPageView, \
-    CreateCommentView, FilePageView
+    CreateCommentView, FilePageView, CreateFileView
 from sbts.ticket.models import Ticket, Comment
-from sbts.file.models import UploadedFile
+from sbts.file.models import UploadedFile, S3Uploader
 
 
 class PrettyNbytesTest(TestCase):
@@ -1102,6 +1106,16 @@ class FilePageViewTest(TestCase):
                          {'url_map': {name: reverse(name) for name in ['file:upload']}})
         self.assertEqual(resp.status_code, 200)
 
+    def test_options(self):
+        '''
+        基本的なアクションはGETに限る
+        '''
+
+        req = self.req_factory.options('/')
+        req.user = AnonymousUser()
+        resp = FilePageView.as_view()(req)
+        self.assertEqual(resp.status_code, 200)
+
     def test_head(self):
         '''
         基本的なアクションはGETに限る
@@ -1158,4 +1172,257 @@ class FilePageViewTest(TestCase):
         req = self.req_factory.trace('/')
         req.user = AnonymousUser()
         resp = FilePageView.as_view()(req)
+        self.assertEqual(resp.status_code, 405)
+
+
+class CreateFileViewTest(TestCase):
+    '''
+    ファイルを期待通り作れるか確認する。各期待しないパラメータについて
+    は、他のすべてのパラメータは期待の値にして検証する。
+    '''
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.user_shimon = User.objects.create_user(
+            'shimon', 'shimon@example.com', 'pw')
+        # 実際にアップロードしようとすると、タイミングの問題でS3にアクセスできない。
+        # S3にアクセスする必要はないので、テストではupload_fileを使わず、単にオブジェクトを作成しておく。
+        cls.blob = S3Uploader.objects.create(
+            status=S3Uploader.COMPLETED, username=cls.user_shimon.username, size=6)
+
+    def setUp(self):
+        super().setUp()
+        self.req_factory = RequestFactory()
+
+    def test_anon(self):
+        '''
+        未ログインはファイル作成不可
+        '''
+
+        req = self.req_factory.post('/', data={'blobkey': self.blob.id, 'filename': 'hello.txt'})
+        req.user = AnonymousUser()
+
+        with self.assertRaises(PermissionDenied):
+            CreateFileView.as_view()(req)
+        self.assertQuerySetEqual(UploadedFile.objects.all(), [])
+        self.assertQuerySetEqual(S3Uploader.objects.all(), [self.blob])
+
+    def test_ok(self):
+        f1_name = 'hello.txt'
+        req = self.req_factory.post('/', data={'blobkey': self.blob.id, 'filename': f1_name})
+        req.user = self.user_shimon
+
+        resp = CreateFileView.as_view()(req)
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp['Location'], reverse('file'))
+        self.assertQuerySetEqual(UploadedFile.objects.all(), [UploadedFile.objects.get(name=f1_name)])
+        self.assertQuerySetEqual(S3Uploader.objects.all(), [])
+
+    def test_extra_data(self):
+        '''
+        POSTで余計なデータが来た場合は余計なデータを無視して成功
+        '''
+
+        f1_name = 'hello.txt'
+        req = self.req_factory.post('/', data={'blobkey': self.blob.id, 'filename': f1_name, 'extra': 'extra'})
+        req.user = self.user_shimon
+
+        resp = CreateFileView.as_view()(req)
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp['Location'], reverse('file'))
+        self.assertQuerySetEqual(UploadedFile.objects.all(), [UploadedFile.objects.get(name=f1_name)])
+        self.assertQuerySetEqual(S3Uploader.objects.all(), [])
+
+    def test_invalid_blobkey(self):
+        '''
+        指定したブロブが無ければ例外を送出
+        '''
+
+        id = uuid.UUID('6b1ec55f-3e41-4780-aa71-0fbbbe4e0d5d')
+        req = self.req_factory.post('/', data={'blobkey': id, 'filename': 'hello.txt'})
+        req.user = self.user_shimon
+
+        with self.assertRaises(ObjectDoesNotExist):
+            CreateFileView.as_view()(req)
+        self.assertQuerySetEqual(UploadedFile.objects.all(), [])
+        self.assertQuerySetEqual(S3Uploader.objects.all(), [self.blob])
+
+    def test_empty_blobkey(self):
+        '''
+        ブロブキーが空文字列なら例外を送出
+        '''
+
+        req = self.req_factory.post('/', data={'blobkey': '', 'filename': 'hello.txt'})
+        req.user = self.user_shimon
+
+        with self.assertRaises(ValidationError):
+            CreateFileView.as_view()(req)
+        self.assertQuerySetEqual(UploadedFile.objects.all(), [])
+        self.assertQuerySetEqual(S3Uploader.objects.all(), [self.blob])
+
+    def test_no_blobkey(self):
+        '''
+        ブロブキーが無いなら例外を送出
+        '''
+
+        req = self.req_factory.post('/', data={'filename': 'hello.txt'})
+        req.user = self.user_shimon
+
+        with self.assertRaises(Exception):
+            CreateFileView.as_view()(req)
+        self.assertQuerySetEqual(UploadedFile.objects.all(), [])
+        self.assertQuerySetEqual(S3Uploader.objects.all(), [self.blob])
+
+    def test_no_filename(self):
+        '''
+        ファイル名が無いなら例外を送出
+        '''
+
+        req = self.req_factory.post('/', data={'blobkey': self.blob.id})
+        req.user = self.user_shimon
+
+        with self.assertRaises(Exception):
+            CreateFileView.as_view()(req)
+        self.assertQuerySetEqual(UploadedFile.objects.all(), [])
+        self.assertQuerySetEqual(S3Uploader.objects.all(), [self.blob])
+
+    def test_empty_filename(self):
+        f1_name = ''
+        req = self.req_factory.post('/', data={'blobkey': self.blob.id, 'filename': f1_name})
+        req.user = self.user_shimon
+
+        resp = CreateFileView.as_view()(req)
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp['Location'], reverse('file'))
+        self.assertQuerySetEqual(UploadedFile.objects.all(), [UploadedFile.objects.get(name=f1_name)])
+        self.assertQuerySetEqual(S3Uploader.objects.all(), [])
+
+    def test_too_long_filename(self):
+        '''
+        ファイル名が長すぎるなら例外を送出
+        '''
+
+        f1_name = ''.join(random.Random(0).choices(string.ascii_lowercase, k=256))
+        req = self.req_factory.post('/', data={'blobkey': self.blob.id, 'filename': f1_name})
+        req.user = self.user_shimon
+
+        with self.assertRaises(DataError):
+            CreateFileView.as_view()(req)
+        self.assertQuerySetEqual(UploadedFile.objects.all(), [])
+        self.assertQuerySetEqual(S3Uploader.objects.all(), [self.blob])
+
+    def test_invalid(self):
+        '''
+        いずれのパラメーターも無効なら例外を送出
+        '''
+
+        id = uuid.UUID('6b1ec55f-3e41-4780-aa71-0fbbbe4e0d5d')
+        f1_name = ''.join(random.Random(0).choices(string.ascii_lowercase, k=256))
+        req = self.req_factory.post('/', data={'blobkey': id, 'filename': f1_name})
+        req.user = self.user_shimon
+
+        with self.assertRaises(Exception):
+            CreateFileView.as_view()(req)
+        self.assertQuerySetEqual(UploadedFile.objects.all(), [])
+        self.assertQuerySetEqual(S3Uploader.objects.all(), [self.blob])
+
+    def test_no(self):
+        '''
+        いずれのパラメーターも無いなら例外を送出
+        '''
+
+        req = self.req_factory.post('/', data={})
+        req.user = self.user_shimon
+
+        with self.assertRaises(Exception):
+            CreateFileView.as_view()(req)
+        self.assertQuerySetEqual(UploadedFile.objects.all(), [])
+        self.assertQuerySetEqual(S3Uploader.objects.all(), [self.blob])
+
+    def test_other_user_blob(self):
+        '''
+        他ユーザーのブロブを横取りしてファイルを作ることは出来ない。
+        '''
+
+        self.blob.username = 'john'
+        self.blob.save()
+
+        f1_name = 'hello.txt'
+        req = self.req_factory.post('/', data={'blobkey': self.blob.id, 'filename': f1_name})
+        req.user = self.user_shimon
+
+        with self.assertRaises(ObjectDoesNotExist):
+            CreateFileView.as_view()(req)
+        self.assertQuerySetEqual(UploadedFile.objects.all(), [])
+        self.assertQuerySetEqual(S3Uploader.objects.all(), [self.blob])
+
+    def test_options(self):
+        '''
+        基本的なアクションはPOSTに限る
+        '''
+
+        req = self.req_factory.options('/')
+        req.user = self.user_shimon
+        resp = CreateFileView.as_view()(req)
+        self.assertEqual(resp.status_code, 200)
+
+    def test_head(self):
+        '''
+        基本的なアクションはPOSTに限る
+        '''
+
+        req = self.req_factory.head('/')
+        req.user = self.user_shimon
+        resp = CreateFileView.as_view()(req)
+        self.assertEqual(resp.status_code, 405)
+
+    def test_get(self):
+        '''
+        基本的なアクションはPOSTに限る
+        '''
+
+        req = self.req_factory.get('/')
+        req.user = self.user_shimon
+        resp = CreateFileView.as_view()(req)
+        self.assertEqual(resp.status_code, 405)
+
+    def test_put(self):
+        '''
+        基本的なアクションはPOSTに限る
+        '''
+
+        req = self.req_factory.put('/')
+        req.user = self.user_shimon
+        resp = CreateFileView.as_view()(req)
+        self.assertEqual(resp.status_code, 405)
+
+    def test_patch(self):
+        '''
+        基本的なアクションはPOSTに限る
+        '''
+
+        req = self.req_factory.patch('/')
+        req.user = self.user_shimon
+        resp = CreateFileView.as_view()(req)
+        self.assertEqual(resp.status_code, 405)
+
+    def test_delete(self):
+        '''
+        基本的なアクションはPOSTに限る
+        '''
+
+        req = self.req_factory.delete('/')
+        req.user = self.user_shimon
+        resp = CreateFileView.as_view()(req)
+        self.assertEqual(resp.status_code, 405)
+
+    def test_trace(self):
+        '''
+        基本的なアクションはPOSTに限る
+        '''
+
+        req = self.req_factory.trace('/')
+        req.user = self.user_shimon
+        resp = CreateFileView.as_view()(req)
         self.assertEqual(resp.status_code, 405)
