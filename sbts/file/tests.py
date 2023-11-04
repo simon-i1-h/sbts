@@ -1,5 +1,6 @@
 import datetime
 import io
+import json
 import random
 import string
 import uuid
@@ -10,7 +11,8 @@ from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.test import TestCase, RequestFactory, override_settings
-from django.urls import reverse
+
+from rest_framework.test import APIRequestFactory
 
 import boto3
 from botocore.exceptions import EndpointConnectionError
@@ -18,7 +20,7 @@ from botocore.exceptions import EndpointConnectionError
 from sbts.core.test_utils import ObjectStorageTestCase
 
 from .models import upload_file, S3Uploader, UploadedFile
-from .views import BlobView
+from .views import BlobView, UploadView
 
 
 class UploadFileTest(ObjectStorageTestCase):
@@ -274,3 +276,269 @@ class BlobViewTest(ObjectStorageTestCase):
         req.user = AnonymousUser()
         with self.assertRaises(Exception):
             BlobView.as_view()(req, key=uuid.UUID('6b1ec55f-3e41-4780-aa71-0fbbbe4e0d5d'))
+
+    def test_options(self):
+        '''
+        基本的なアクションはGETに限る
+        '''
+
+        req = self.req_factory.options('/')
+        req.user = AnonymousUser()
+        resp = BlobView.as_view()(req, key=uuid.UUID('6b1ec55f-3e41-4780-aa71-0fbbbe4e0d5d'))
+        self.assertEqual(resp.status_code, 200)
+
+    def test_head(self):
+        '''
+        基本的なアクションはGETに限る
+        '''
+
+        content = b'hello.'
+        key = upload_file(io.BytesIO(content), self.user_shimon.username)
+        fname = 'hello.txt'
+        lastmod = datetime.datetime.fromisoformat('2023-11-04T12:00:00Z')
+        UploadedFile.objects.create_from_s3(
+            key, self.user_shimon.username, fname, lastmod)
+
+        req = self.req_factory.head('/')
+        req.user = AnonymousUser()
+        resp = BlobView.as_view()(req, key=key)
+        self.assertEqual(resp.status_code, 200)
+
+    def test_post(self):
+        '''
+        基本的なアクションはGETに限る
+        '''
+
+        req = self.req_factory.post('/')
+        req.user = AnonymousUser()
+        resp = BlobView.as_view()(req, key=uuid.UUID('6b1ec55f-3e41-4780-aa71-0fbbbe4e0d5d'))
+        self.assertEqual(resp.status_code, 405)
+
+    def test_put(self):
+        '''
+        基本的なアクションはGETに限る
+        '''
+
+        req = self.req_factory.put('/')
+        req.user = AnonymousUser()
+        resp = BlobView.as_view()(req, key=uuid.UUID('6b1ec55f-3e41-4780-aa71-0fbbbe4e0d5d'))
+        self.assertEqual(resp.status_code, 405)
+
+    def test_patch(self):
+        '''
+        基本的なアクションはGETに限る
+        '''
+
+        req = self.req_factory.patch('/')
+        req.user = AnonymousUser()
+        resp = BlobView.as_view()(req, key=uuid.UUID('6b1ec55f-3e41-4780-aa71-0fbbbe4e0d5d'))
+        self.assertEqual(resp.status_code, 405)
+
+    def test_delete(self):
+        '''
+        基本的なアクションはGETに限る
+        '''
+        req = self.req_factory.delete('/')
+        req.user = AnonymousUser()
+        resp = BlobView.as_view()(req, key=uuid.UUID('6b1ec55f-3e41-4780-aa71-0fbbbe4e0d5d'))
+        self.assertEqual(resp.status_code, 405)
+
+    def test_trace(self):
+        '''
+        基本的なアクションはGETに限る
+        '''
+        req = self.req_factory.trace('/')
+        req.user = AnonymousUser()
+        resp = BlobView.as_view()(req, key=uuid.UUID('6b1ec55f-3e41-4780-aa71-0fbbbe4e0d5d'))
+        self.assertEqual(resp.status_code, 405)
+
+
+class UploadViewTest(ObjectStorageTestCase):
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.user_shimon = User.objects.create_user(
+            'shimon', 'shimon@example.com', 'pw')
+
+    def setUp(self):
+        super().setUp()
+        self.req_factory = APIRequestFactory()
+
+    def test_anon(self):
+        '''
+        匿名でアップロードすることは出来ない
+        '''
+
+        self.assertQuerySetEqual(S3Uploader.objects.all(), [])
+
+        content = b'hello.'
+        req = self.req_factory.post('/', content,
+                                    content_type='application/octet-stream')
+        req.user = AnonymousUser()
+        resp = UploadView.as_view()(req)
+        resp.render()
+
+        self.assertEqual(resp.status_code, 403)
+        self.assertQuerySetEqual(S3Uploader.objects.all(), [])
+
+    def test_ok(self):
+        self.assertQuerySetEqual(S3Uploader.objects.all(), [])
+
+        content = b'hello.'
+        req = self.req_factory.post('/', content,
+                                    content_type='application/octet-stream')
+        req.user = self.user_shimon
+        resp = UploadView.as_view()(req)
+        resp.render()
+
+        o1 = S3Uploader.objects.first()
+        self.assertQuerySetEqual(S3Uploader.objects.all(), [o1])
+
+        s3client = boto3.client('s3', endpoint_url=settings.S3_ENDPOINT)
+        s3obj = s3client.get_object(Bucket=settings.S3_BUCKET_FILE, Key=str(o1.id))
+        self.assertEqual(s3obj['Body'].read(), content)
+
+        self.assertEqual(json.loads(resp.content)['key'], str(o1.id))
+        self.assertEqual(resp.status_code, 200)
+
+    def test_0byte(self):
+        '''
+        0バイトのデータもアップロード可能
+        '''
+
+        self.assertQuerySetEqual(S3Uploader.objects.all(), [])
+
+        content = b''
+        req = self.req_factory.post('/', content,
+                                    content_type='application/octet-stream')
+        req.user = self.user_shimon
+        resp = UploadView.as_view()(req)
+        resp.render()
+
+        o1 = S3Uploader.objects.first()
+        self.assertQuerySetEqual(S3Uploader.objects.all(), [o1])
+
+        s3client = boto3.client('s3', endpoint_url=settings.S3_ENDPOINT)
+        s3obj = s3client.get_object(Bucket=settings.S3_BUCKET_FILE, Key=str(o1.id))
+        self.assertEqual(s3obj['Body'].read(), content)
+
+        self.assertEqual(json.loads(resp.content)['key'], str(o1.id))
+        self.assertEqual(resp.status_code, 200)
+
+    def test_chunk(self):
+        '''
+        マルチパートアップロードのチャンクと同じ大きさのデータ
+        '''
+
+        self.assertQuerySetEqual(S3Uploader.objects.all(), [])
+
+        content = random.Random(0).randbytes(settings.S3_CHUNK_SIZE)
+        req = self.req_factory.post('/', content,
+                                    content_type='application/octet-stream')
+        req.user = self.user_shimon
+        resp = UploadView.as_view()(req)
+        resp.render()
+
+        o1 = S3Uploader.objects.first()
+        self.assertQuerySetEqual(S3Uploader.objects.all(), [o1])
+
+        s3client = boto3.client('s3', endpoint_url=settings.S3_ENDPOINT)
+        s3obj = s3client.get_object(Bucket=settings.S3_BUCKET_FILE, Key=str(o1.id))
+        self.assertEqual(s3obj['Body'].read(), content)
+
+        self.assertEqual(json.loads(resp.content)['key'], str(o1.id))
+        self.assertEqual(resp.status_code, 200)
+
+    def test_chunk_plus_1(self):
+        '''
+        マルチパートアップロードのチャンク+1の大きさのデータ
+        '''
+
+        self.assertQuerySetEqual(S3Uploader.objects.all(), [])
+
+        content = random.Random(1).randbytes(settings.S3_CHUNK_SIZE + 1)
+        req = self.req_factory.post('/', content,
+                                    content_type='application/octet-stream')
+        req.user = self.user_shimon
+        resp = UploadView.as_view()(req)
+        resp.render()
+
+        o1 = S3Uploader.objects.first()
+        self.assertQuerySetEqual(S3Uploader.objects.all(), [o1])
+
+        s3client = boto3.client('s3', endpoint_url=settings.S3_ENDPOINT)
+        s3obj = s3client.get_object(Bucket=settings.S3_BUCKET_FILE, Key=str(o1.id))
+        self.assertEqual(s3obj['Body'].read(), content)
+
+        self.assertEqual(json.loads(resp.content)['key'], str(o1.id))
+        self.assertEqual(resp.status_code, 200)
+
+    def test_options(self):
+        '''
+        基本的なアクションはPOSTに限る
+        '''
+
+        req = self.req_factory.options('/')
+        req.user = self.user_shimon
+        resp = UploadView.as_view()(req)
+        self.assertEqual(resp.status_code, 200)
+
+    def test_head(self):
+        '''
+        基本的なアクションはPOSTに限る
+        '''
+
+        req = self.req_factory.head('/')
+        req.user = self.user_shimon
+        resp = UploadView.as_view()(req)
+        self.assertEqual(resp.status_code, 405)
+
+    def test_get(self):
+        '''
+        基本的なアクションはPOSTに限る
+        '''
+
+        req = self.req_factory.get('/')
+        req.user = self.user_shimon
+        resp = UploadView.as_view()(req)
+        self.assertEqual(resp.status_code, 405)
+
+    def test_put(self):
+        '''
+        基本的なアクションはPOSTに限る
+        '''
+
+        req = self.req_factory.put('/')
+        req.user = self.user_shimon
+        resp = UploadView.as_view()(req)
+        self.assertEqual(resp.status_code, 405)
+
+    def test_patch(self):
+        '''
+        基本的なアクションはPOSTに限る
+        '''
+
+        req = self.req_factory.patch('/')
+        req.user = self.user_shimon
+        resp = UploadView.as_view()(req)
+        self.assertEqual(resp.status_code, 405)
+
+    def test_delete(self):
+        '''
+        基本的なアクションはPOSTに限る
+        '''
+
+        req = self.req_factory.delete('/')
+        req.user = self.user_shimon
+        resp = UploadView.as_view()(req)
+        self.assertEqual(resp.status_code, 405)
+
+    def test_trace(self):
+        '''
+        基本的なアクションはPOSTに限る
+        '''
+
+        req = self.req_factory.trace('/')
+        req.user = self.user_shimon
+        resp = UploadView.as_view()(req)
+        self.assertEqual(resp.status_code, 405)
