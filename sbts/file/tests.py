@@ -3,12 +3,14 @@ import io
 import random
 import string
 import uuid
+from email.message import EmailMessage
 
 from django.db import transaction, DataError
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AnonymousUser, User
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
-from django.test import TestCase, override_settings
+from django.test import TestCase, RequestFactory, override_settings
+from django.urls import reverse
 
 import boto3
 from botocore.exceptions import EndpointConnectionError
@@ -16,6 +18,7 @@ from botocore.exceptions import EndpointConnectionError
 from sbts.core.test_utils import ObjectStorageTestCase
 
 from .models import upload_file, S3Uploader, UploadedFile
+from .views import BlobView
 
 
 class UploadFileTest(ObjectStorageTestCase):
@@ -226,3 +229,48 @@ class UploadedFileCreateFromS3Test(TestCase):
 
         self.assertQuerySetEqual(UploadedFile.objects.all(), [])
         self.assertQuerySetEqual(S3Uploader.objects.all(), [self.blob])
+
+
+class BlobViewTest(ObjectStorageTestCase):
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.user_shimon = User.objects.create_user(
+            'shimon', 'shimon@example.com', 'pw')
+
+    def setUp(self):
+        super().setUp()
+        self.req_factory = RequestFactory()
+
+    def test_ok(self):
+        content = b'hello.'
+        key = upload_file(io.BytesIO(content), self.user_shimon.username)
+        fname = 'hello.txt'
+        lastmod = datetime.datetime.fromisoformat('2023-11-04T12:00:00Z')
+        UploadedFile.objects.create_from_s3(
+            key, self.user_shimon.username, fname, lastmod)
+
+        req = self.req_factory.get('/')
+        req.user = AnonymousUser()
+        resp = BlobView.as_view()(req, key=key)
+
+        self.assertEqual(resp['Content-Type'], 'application/octet-stream')
+        msg = EmailMessage()
+        msg['Content-Disposition'] = resp['Content-Disposition']
+        self.assertEqual(msg.get_content_disposition(), 'attachment')
+        self.assertEqual(msg.get_filename(), fname)
+        self.assertEqual(b''.join(resp.streaming_content), content)
+        self.assertEqual(resp.status_code, 200)
+
+    def test_invalid(self):
+        content = b'hello.'
+        key = upload_file(io.BytesIO(content), self.user_shimon.username)
+        fname = 'hello.txt'
+        lastmod = datetime.datetime.fromisoformat('2023-11-04T12:00:00Z')
+        UploadedFile.objects.create_from_s3(
+            key, self.user_shimon.username, fname, lastmod)
+
+        req = self.req_factory.get('/')
+        req.user = AnonymousUser()
+        with self.assertRaises(Exception):
+            BlobView.as_view()(req, key=uuid.UUID('6b1ec55f-3e41-4780-aa71-0fbbbe4e0d5d'))
