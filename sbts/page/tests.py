@@ -4,6 +4,7 @@ import string
 import uuid
 
 from django.db import DataError
+from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist, \
     ValidationError
@@ -12,7 +13,7 @@ from django.urls import reverse
 
 from .templatetags.pretty_filters import pretty_nbytes
 from .views import TicketPageView, CreateTicketView, TicketDetailPageView, \
-    CreateCommentView, FilePageView, CreateFileView
+    CreateCommentView, FilePageView, CreateFileView, TopPageView
 from sbts.ticket.models import Ticket, Comment
 from sbts.file.models import UploadedFile, S3Uploader
 
@@ -1425,4 +1426,85 @@ class CreateFileViewTest(TestCase):
         req = self.req_factory.trace('/')
         req.user = self.user_shimon
         resp = CreateFileView.as_view()(req)
+        self.assertEqual(resp.status_code, 405)
+
+
+class TopPageViewTest(TestCase):
+    def setUp(self):
+        super().setUp()
+        self.req_factory = RequestFactory()
+
+    def test_ok(self):
+        req = self.req_factory.get('/')
+        req.user = AnonymousUser()
+        resp = TopPageView.as_view()(req)
+        self.assertEqual(resp.context_data['text'], settings.TOPPAGE_TEXT)
+        self.assertEqual(resp.status_code, 200)
+
+    def test_options(self):
+        '''
+        基本的なアクションはGETに限る
+        '''
+
+        req = self.req_factory.options('/')
+        req.user = AnonymousUser()
+        resp = TopPageView.as_view()(req)
+        self.assertEqual(resp.status_code, 200)
+
+    def test_head(self):
+        '''
+        基本的なアクションはGETに限る
+        '''
+
+        req = self.req_factory.head('/')
+        req.user = AnonymousUser()
+        resp = TopPageView.as_view()(req)
+        self.assertEqual(resp.status_code, 200)
+
+    def test_post(self):
+        '''
+        基本的なアクションはGETに限る
+        '''
+
+        req = self.req_factory.post('/')
+        req.user = AnonymousUser()
+        resp = TopPageView.as_view()(req)
+        self.assertEqual(resp.status_code, 405)
+
+    def test_put(self):
+        '''
+        基本的なアクションはGETに限る
+        '''
+
+        req = self.req_factory.put('/')
+        req.user = AnonymousUser()
+        resp = TopPageView.as_view()(req)
+        self.assertEqual(resp.status_code, 405)
+
+    def test_patch(self):
+        '''
+        基本的なアクションはGETに限る
+        '''
+
+        req = self.req_factory.patch('/')
+        req.user = AnonymousUser()
+        resp = TopPageView.as_view()(req)
+        self.assertEqual(resp.status_code, 405)
+
+    def test_delete(self):
+        '''
+        基本的なアクションはGETに限る
+        '''
+        req = self.req_factory.delete('/')
+        req.user = AnonymousUser()
+        resp = TopPageView.as_view()(req)
+        self.assertEqual(resp.status_code, 405)
+
+    def test_trace(self):
+        '''
+        基本的なアクションはGETに限る
+        '''
+        req = self.req_factory.trace('/')
+        req.user = AnonymousUser()
+        resp = TopPageView.as_view()(req)
         self.assertEqual(resp.status_code, 405)

@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.utils import timezone
@@ -32,6 +33,11 @@ class BaseTicketPageView(TemplateView):
 
 class TopPageView(TemplateView):
     template_name = 'page/top.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['text'] = settings.TOPPAGE_TEXT
+        return ctx
 
 
 class FilePageView(BaseFilePageView):

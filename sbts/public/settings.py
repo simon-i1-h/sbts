@@ -153,4 +153,7 @@ REST_FRAMEWORK = {
 }
 
 
+TOPPAGE_TEXT = 'トップページ'
+
+
 from sbts_public_custom import *
