@@ -120,7 +120,7 @@ class UploadFileTest(ObjectStorageTestCase):
         self.assertQuerySetEqual(S3Uploader.objects.all(), [o1])
         self.assertEqual(o1.status, S3Uploader.UPLOADING)
         self.assertEqual(o1.username, self.user_shimon.username)
-        self.assertEqual(o1.size, -1)
+        self.assertIs(o1.size, None)
 
     def test_empty_username(self):
         username = ''

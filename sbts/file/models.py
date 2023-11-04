@@ -11,6 +11,7 @@ class UploadedFile(models.Model):
                 uploader = S3Uploader.objects.get(
                     id=key,
                     status=S3Uploader.COMPLETED,
+                    size__isnull=False,
                     # 他のユーザーのブロブは参照できない
                     username=username)
                 # S3のオブジェクトの所有者をS3UploaderからUploadedFileに移動
@@ -48,7 +49,7 @@ class S3Uploader(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     status = models.IntegerField(choices=STATUS_CHOICES)
-    size = models.BigIntegerField(default=-1)  # -1は未設定を表す
+    size = models.BigIntegerField(null=True)
     username = models.CharField(max_length=150)
 
     @classmethod
