@@ -18,8 +18,8 @@ class TicketSortedTicketsTest(TestCase):
         チケットが1つなら、単にそれだけを返す
         '''
 
-        dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
-        t1 = Ticket.objects.create(title='ticket', created_at=dt)
+        t1_dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
+        t1 = Ticket.objects.create(title='ticket', created_at=t1_dt)
 
         tickets = Ticket.objects.sorted_tickets()
         self.assertQuerySetEqual(tickets, [t1])
@@ -29,10 +29,10 @@ class TicketSortedTicketsTest(TestCase):
         チケットは常に降順で返される
         '''
 
-        dt1 = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
-        t1 = Ticket.objects.create(title='ticket 1', created_at=dt1)
-        dt2 = datetime.datetime.fromisoformat('2023-10-24T23:00:00Z')
-        t2 = Ticket.objects.create(title='ticket 2', created_at=dt2)
+        t1_dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
+        t1 = Ticket.objects.create(title='ticket 1', created_at=t1_dt)
+        t2_dt = datetime.datetime.fromisoformat('2023-10-24T23:00:00Z')
+        t2 = Ticket.objects.create(title='ticket 2', created_at=t2_dt)
 
         tickets = Ticket.objects.sorted_tickets()
         self.assertQuerySetEqual(tickets, [t2, t1])
@@ -42,12 +42,12 @@ class TicketSortedTicketsTest(TestCase):
         チケットは常に降順で返される
         '''
 
-        dt1 = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
-        t1 = Ticket.objects.create(title='ticket 1', created_at=dt1)
-        dt2 = datetime.datetime.fromisoformat('2023-10-24T23:00:00Z')
-        t2 = Ticket.objects.create(title='ticket 2', created_at=dt2)
-        dt3 = datetime.datetime.fromisoformat('2023-10-22T23:50:00Z')
-        t3 = Ticket.objects.create(title='ticket 3', created_at=dt3)
+        t1_dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
+        t1 = Ticket.objects.create(title='ticket 1', created_at=t1_dt)
+        t2_dt = datetime.datetime.fromisoformat('2023-10-24T23:00:00Z')
+        t2 = Ticket.objects.create(title='ticket 2', created_at=t2_dt)
+        t3_dt = datetime.datetime.fromisoformat('2023-10-22T23:50:00Z')
+        t3 = Ticket.objects.create(title='ticket 3', created_at=t3_dt)
 
         tickets = Ticket.objects.sorted_tickets()
         self.assertQuerySetEqual(tickets, [t2, t1, t3])
@@ -59,8 +59,8 @@ class TicketSortedCommentsTest(TestCase):
         コメントがないなら、当然空集合を返す
         '''
 
-        dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
-        t1 = Ticket.objects.create(title='ticket', created_at=dt)
+        t1_dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
+        t1 = Ticket.objects.create(title='ticket', created_at=t1_dt)
 
         self.assertQuerySetEqual(t1.sorted_comments(), [])
 
@@ -69,8 +69,8 @@ class TicketSortedCommentsTest(TestCase):
         コメントが1つなら、単にそれだけを返す
         '''
 
-        dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
-        t1 = Ticket.objects.create(title='ticket', created_at=dt)
+        t1_dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
+        t1 = Ticket.objects.create(title='ticket', created_at=t1_dt)
 
         c1_dt = datetime.datetime.fromisoformat('2023-10-24T09:00:00Z')
         c1 = t1.comment_set.create(comment='a', created_at=c1_dt)
@@ -82,8 +82,8 @@ class TicketSortedCommentsTest(TestCase):
         コメントは常に昇順で返される
         '''
 
-        dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
-        t1 = Ticket.objects.create(title='ticket', created_at=dt)
+        t1_dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
+        t1 = Ticket.objects.create(title='ticket', created_at=t1_dt)
 
         c1_dt = datetime.datetime.fromisoformat('2023-10-24T09:00:00Z')
         c1 = t1.comment_set.create(comment='a', created_at=c1_dt)
@@ -97,8 +97,8 @@ class TicketSortedCommentsTest(TestCase):
         コメントは常に昇順で返される
         '''
 
-        dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
-        t1 = Ticket.objects.create(title='ticket', created_at=dt)
+        t1_dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
+        t1 = Ticket.objects.create(title='ticket', created_at=t1_dt)
 
         c1_dt = datetime.datetime.fromisoformat('2023-10-24T09:00:00Z')
         c1 = t1.comment_set.create(comment='a', created_at=c1_dt)

@@ -70,8 +70,8 @@ class UploadFileTest(ObjectStorageTestCase):
         '''
 
         content = random.Random(0).randbytes(settings.S3_CHUNK_SIZE)
-        file = io.BytesIO(content)
-        key = upload_file(file, self.user_shimon.username)
+        blob = io.BytesIO(content)
+        key = upload_file(blob, self.user_shimon.username)
 
         s3client = boto3.client('s3', endpoint_url=settings.S3_ENDPOINT)
         s3obj = s3client.get_object(Bucket=settings.S3_BUCKET_FILE, Key=str(key))
@@ -89,8 +89,8 @@ class UploadFileTest(ObjectStorageTestCase):
         '''
 
         content = random.Random(1).randbytes(settings.S3_CHUNK_SIZE + 1)
-        file = io.BytesIO(content)
-        key = upload_file(file, self.user_shimon.username)
+        blob = io.BytesIO(content)
+        key = upload_file(blob, self.user_shimon.username)
 
         s3client = boto3.client('s3', endpoint_url=settings.S3_ENDPOINT)
         s3obj = s3client.get_object(Bucket=settings.S3_BUCKET_FILE, Key=str(key))
@@ -110,11 +110,11 @@ class UploadFileTest(ObjectStorageTestCase):
         '''
 
         content = b'hello.'
-        file = io.BytesIO(content)
+        blob = io.BytesIO(content)
         self.assertQuerySetEqual(S3Uploader.objects.all(), [])
 
         with self.assertRaises(EndpointConnectionError):
-            upload_file(file, self.user_shimon.username)
+            upload_file(blob, self.user_shimon.username)
 
         o1 = S3Uploader.objects.get(username=self.user_shimon.username)
         self.assertQuerySetEqual(S3Uploader.objects.all(), [o1])
@@ -125,8 +125,8 @@ class UploadFileTest(ObjectStorageTestCase):
     def test_empty_username(self):
         username = ''
         content = b'hello.'
-        file = io.BytesIO(content)
-        key = upload_file(file, username)
+        blob = io.BytesIO(content)
+        key = upload_file(blob, username)
 
         s3client = boto3.client('s3', endpoint_url=settings.S3_ENDPOINT)
         s3obj = s3client.get_object(Bucket=settings.S3_BUCKET_FILE, Key=str(key))
@@ -145,11 +145,11 @@ class UploadFileTest(ObjectStorageTestCase):
         '''
 
         content = b'hello.'
-        file = io.BytesIO(content)
+        blob = io.BytesIO(content)
 
         with self.assertRaises(RuntimeError):
             with transaction.atomic():
-                upload_file(file, self.user_shimon.username)
+                upload_file(blob, self.user_shimon.username)
 
         self.assertQuerySetEqual(S3Uploader.objects.all(), [])
 
@@ -338,6 +338,7 @@ class BlobViewTest(ObjectStorageTestCase):
         '''
         基本的なアクションはGETに限る
         '''
+
         req = self.req_factory.delete('/')
         req.user = AnonymousUser()
         resp = BlobView.as_view()(req, key=uuid.UUID('6b1ec55f-3e41-4780-aa71-0fbbbe4e0d5d'))
@@ -347,6 +348,7 @@ class BlobViewTest(ObjectStorageTestCase):
         '''
         基本的なアクションはGETに限る
         '''
+
         req = self.req_factory.trace('/')
         req.user = AnonymousUser()
         resp = BlobView.as_view()(req, key=uuid.UUID('6b1ec55f-3e41-4780-aa71-0fbbbe4e0d5d'))
