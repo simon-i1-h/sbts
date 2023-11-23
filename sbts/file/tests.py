@@ -32,8 +32,8 @@ class UploadFileTest(ObjectStorageTestCase):
 
     def test_ok(self):
         content = b'hello.'
-        file = io.BytesIO(content)
-        key = upload_blob(file, self.user_shimon.username)
+        blob = io.BytesIO(content)
+        key = upload_blob(blob, self.user_shimon.username)
 
         s3client = boto3.client('s3', endpoint_url=settings.S3_ENDPOINT)
         s3obj = s3client.get_object(Bucket=settings.S3_BUCKET_FILE, Key=str(key))
@@ -51,8 +51,8 @@ class UploadFileTest(ObjectStorageTestCase):
         '''
 
         content = b''
-        file = io.BytesIO(content)
-        key = upload_blob(file, self.user_shimon.username)
+        blob = io.BytesIO(content)
+        key = upload_blob(blob, self.user_shimon.username)
 
         s3client = boto3.client('s3', endpoint_url=settings.S3_ENDPOINT)
         s3obj = s3client.get_object(Bucket=settings.S3_BUCKET_FILE, Key=str(key))

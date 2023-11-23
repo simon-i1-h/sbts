@@ -53,7 +53,7 @@ class S3Uploader(models.Model):
     username = models.CharField(max_length=150)
 
     @classmethod
-    def upload(cls, file, username):
+    def upload(cls, blob, username):
         key = uuid.uuid4()
         size = 0
 
@@ -74,7 +74,7 @@ class S3Uploader(models.Model):
             'Parts': []
         }
         partnum = 1  # 1 ~ 10,000
-        while chunk := file.read(settings.S3_CHUNK_SIZE):
+        while chunk := blob.read(settings.S3_CHUNK_SIZE):
             part = s3client.upload_part(
                 Body=chunk,
                 Bucket=settings.S3_BUCKET_FILE,
@@ -116,5 +116,5 @@ class S3Uploader(models.Model):
         return key
 
 
-def upload_blob(file, username):
-    return S3Uploader.upload(file, username)
+def upload_blob(blob, username):
+    return S3Uploader.upload(blob, username)
