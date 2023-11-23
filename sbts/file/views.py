@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 import boto3
 import io
 
-from .models import UploadedFile, upload_file
+from .models import UploadedFile, upload_blob
 
 
 class StreamParser(BaseParser):
@@ -25,7 +25,7 @@ class StreamRequestView(APIView):
 
 class UploadView(StreamRequestView):
     def post(self, request, format=None):
-        key = upload_file(
+        key = upload_blob(
             # HTTPリクエストのボディが空な場合、request.dataが空辞書に
             # なる
             request.data.get('blob', io.BytesIO(b'')),

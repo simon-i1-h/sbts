@@ -116,5 +116,5 @@ class S3Uploader(models.Model):
         return key
 
 
-def upload_file(file, username):
+def upload_blob(file, username):
     return S3Uploader.upload(file, username)

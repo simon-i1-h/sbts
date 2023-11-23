@@ -1213,7 +1213,7 @@ class CreateFileViewTest(TestCase):
             'shimon', 'shimon@example.com', 'pw')
         # 実際にアップロードしようとすると、タイミングの問題でS3にアク
         # セスできない。S3にアクセスする必要はないので、テストでは
-        # upload_fileを使わず、単にオブジェクトを作成しておく。
+        # upload_blobを使わず、単にオブジェクトを作成しておく。
         cls.blob = S3Uploader.objects.create(
             status=S3Uploader.COMPLETED, username=cls.user_shimon.username, size=6)
 

@@ -19,7 +19,7 @@ from botocore.exceptions import EndpointConnectionError
 
 from sbts.core.test_utils import ObjectStorageTestCase
 
-from .models import upload_file, S3Uploader, UploadedFile
+from .models import upload_blob, S3Uploader, UploadedFile
 from .views import BlobView, UploadView
 
 
@@ -33,7 +33,7 @@ class UploadFileTest(ObjectStorageTestCase):
     def test_ok(self):
         content = b'hello.'
         file = io.BytesIO(content)
-        key = upload_file(file, self.user_shimon.username)
+        key = upload_blob(file, self.user_shimon.username)
 
         s3client = boto3.client('s3', endpoint_url=settings.S3_ENDPOINT)
         s3obj = s3client.get_object(Bucket=settings.S3_BUCKET_FILE, Key=str(key))
@@ -52,7 +52,7 @@ class UploadFileTest(ObjectStorageTestCase):
 
         content = b''
         file = io.BytesIO(content)
-        key = upload_file(file, self.user_shimon.username)
+        key = upload_blob(file, self.user_shimon.username)
 
         s3client = boto3.client('s3', endpoint_url=settings.S3_ENDPOINT)
         s3obj = s3client.get_object(Bucket=settings.S3_BUCKET_FILE, Key=str(key))
@@ -71,7 +71,7 @@ class UploadFileTest(ObjectStorageTestCase):
 
         content = random.Random(0).randbytes(settings.S3_CHUNK_SIZE)
         blob = io.BytesIO(content)
-        key = upload_file(blob, self.user_shimon.username)
+        key = upload_blob(blob, self.user_shimon.username)
 
         s3client = boto3.client('s3', endpoint_url=settings.S3_ENDPOINT)
         s3obj = s3client.get_object(Bucket=settings.S3_BUCKET_FILE, Key=str(key))
@@ -90,7 +90,7 @@ class UploadFileTest(ObjectStorageTestCase):
 
         content = random.Random(1).randbytes(settings.S3_CHUNK_SIZE + 1)
         blob = io.BytesIO(content)
-        key = upload_file(blob, self.user_shimon.username)
+        key = upload_blob(blob, self.user_shimon.username)
 
         s3client = boto3.client('s3', endpoint_url=settings.S3_ENDPOINT)
         s3obj = s3client.get_object(Bucket=settings.S3_BUCKET_FILE, Key=str(key))
@@ -114,7 +114,7 @@ class UploadFileTest(ObjectStorageTestCase):
         self.assertQuerySetEqual(S3Uploader.objects.all(), [])
 
         with self.assertRaises(EndpointConnectionError):
-            upload_file(blob, self.user_shimon.username)
+            upload_blob(blob, self.user_shimon.username)
 
         o1 = S3Uploader.objects.get(username=self.user_shimon.username)
         self.assertQuerySetEqual(S3Uploader.objects.all(), [o1])
@@ -126,7 +126,7 @@ class UploadFileTest(ObjectStorageTestCase):
         username = ''
         content = b'hello.'
         blob = io.BytesIO(content)
-        key = upload_file(blob, username)
+        key = upload_blob(blob, username)
 
         s3client = boto3.client('s3', endpoint_url=settings.S3_ENDPOINT)
         s3obj = s3client.get_object(Bucket=settings.S3_BUCKET_FILE, Key=str(key))
@@ -149,7 +149,7 @@ class UploadFileTest(ObjectStorageTestCase):
 
         with self.assertRaises(RuntimeError):
             with transaction.atomic():
-                upload_file(blob, self.user_shimon.username)
+                upload_blob(blob, self.user_shimon.username)
 
         self.assertQuerySetEqual(S3Uploader.objects.all(), [])
 
@@ -166,7 +166,7 @@ class UploadedFileCreateFromS3Test(TestCase):
         cls.user_shimon = User.objects.create_user(
             'shimon', 'shimon@example.com', 'pw')
         # 実際にアップロードしようとすると、タイミングの問題でS3にアクセスできない。
-        # S3にアクセスする必要はないので、テストではupload_fileを使わず、単にオブジェクトを作成しておく。
+        # S3にアクセスする必要はないので、テストではupload_blobを使わず、単にオブジェクトを作成しておく。
         cls.blob = S3Uploader.objects.create(
             status=S3Uploader.COMPLETED, username=cls.user_shimon.username, size=6)
 
@@ -246,7 +246,7 @@ class BlobViewTest(ObjectStorageTestCase):
 
     def test_ok(self):
         content = b'hello.'
-        key = upload_file(io.BytesIO(content), self.user_shimon.username)
+        key = upload_blob(io.BytesIO(content), self.user_shimon.username)
         fname = 'hello.txt'
         lastmod = datetime.datetime.fromisoformat('2023-11-04T12:00:00Z')
         UploadedFile.objects.create_from_s3(
@@ -266,7 +266,7 @@ class BlobViewTest(ObjectStorageTestCase):
 
     def test_invalid(self):
         content = b'hello.'
-        key = upload_file(io.BytesIO(content), self.user_shimon.username)
+        key = upload_blob(io.BytesIO(content), self.user_shimon.username)
         fname = 'hello.txt'
         lastmod = datetime.datetime.fromisoformat('2023-11-04T12:00:00Z')
         UploadedFile.objects.create_from_s3(
@@ -293,7 +293,7 @@ class BlobViewTest(ObjectStorageTestCase):
         '''
 
         content = b'hello.'
-        key = upload_file(io.BytesIO(content), self.user_shimon.username)
+        key = upload_blob(io.BytesIO(content), self.user_shimon.username)
         fname = 'hello.txt'
         lastmod = datetime.datetime.fromisoformat('2023-11-04T12:00:00Z')
         UploadedFile.objects.create_from_s3(
