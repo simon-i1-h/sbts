@@ -7,7 +7,7 @@
   {% if user.is_authenticated %}
   <form action="{% url 'page:ticket' %}" method="post" class="widget-group">
     {% csrf_token %}
-    <input type="text" name="title" size="80">
+    <input type="text" name="title" size="80" required>
     <span class="enter-button ticket-new"><input type="submit" value="チケットを作成"></span>
   </form>
   {% endif %}

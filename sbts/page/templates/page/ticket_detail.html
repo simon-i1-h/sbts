@@ -22,7 +22,7 @@
   <form action="{% url 'page:comment' %}" method="post" class="widget-group">
     {% csrf_token %}
     <input type="hidden" name="key" value="{{ ticket.key }}">
-    <textarea rows="8" name="comment"></textarea>
+    <textarea rows="8" name="comment" required></textarea>
     <div class="enter-button"><input type="submit" value="コメント"></div>
   </form>
   {% endif %}
