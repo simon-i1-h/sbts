@@ -12,8 +12,8 @@ from django.test import RequestFactory, TestCase
 from django.urls import reverse
 
 from .templatetags.pretty_filters import pretty_nbytes
-from .views import TicketPageView, CreateTicketView, TicketDetailPageView, \
-    CreateCommentView, FilePageView, CreateFileView, TopPageView
+from .views import TicketPageView, TicketView, TicketDetailPageView, \
+    CommentView, FilePageView, FileView, TopPageView
 from sbts.ticket.models import Ticket, Comment
 from sbts.file.models import UploadedFile, S3Uploader
 
@@ -425,7 +425,7 @@ class TicketPageViewTest(TestCase):
         self.assertEqual(resp.status_code, 405)
 
 
-class CreateTicketViewTest(TestCase):
+class TicketViewTest(TestCase):
     '''
     チケットを期待通り作れるか確認する。各期待しないパラメータについて
     は、他のすべてのパラメータは期待の値にして検証する。
@@ -452,7 +452,7 @@ class CreateTicketViewTest(TestCase):
         req.user = AnonymousUser()
 
         with self.assertRaises(PermissionDenied):
-            CreateTicketView.as_view()(req)
+            TicketView.as_view()(req)
         self.assertQuerySetEqual(Ticket.objects.all(), [])
 
     def test_ok(self):
@@ -462,7 +462,7 @@ class CreateTicketViewTest(TestCase):
         req = self.req_factory.post('/', data={'title': t1_title})
         req.user = self.user_shimon
 
-        resp = CreateTicketView.as_view()(req)
+        resp = TicketView.as_view()(req)
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp['Location'], reverse('page:ticket_page'))
         self.assertQuerySetEqual(Ticket.objects.all(), [Ticket.objects.get(title=t1_title)])
@@ -478,7 +478,7 @@ class CreateTicketViewTest(TestCase):
         req = self.req_factory.post('/', data={'title': t1_title, 'extra': 'extra'})
         req.user = self.user_shimon
 
-        resp = CreateTicketView.as_view()(req)
+        resp = TicketView.as_view()(req)
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp['Location'], reverse('page:ticket_page'))
         self.assertQuerySetEqual(Ticket.objects.all(), [Ticket.objects.get(title=t1_title)])
@@ -493,7 +493,7 @@ class CreateTicketViewTest(TestCase):
         t1_title = ''
         req = self.req_factory.post('/', data={'title': t1_title})
         req.user = self.user_shimon
-        resp = CreateTicketView.as_view()(req)
+        resp = TicketView.as_view()(req)
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp['Location'], reverse('page:ticket_page'))
         self.assertQuerySetEqual(Ticket.objects.all(), [Ticket.objects.get(title=t1_title)])
@@ -508,7 +508,7 @@ class CreateTicketViewTest(TestCase):
         t1_title = 't' * 1024
         req = self.req_factory.post('/', data={'title': t1_title})
         req.user = self.user_shimon
-        resp = CreateTicketView.as_view()(req)
+        resp = TicketView.as_view()(req)
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp['Location'], reverse('page:ticket_page'))
         self.assertQuerySetEqual(Ticket.objects.all(), [Ticket.objects.get(title=t1_title)])
@@ -524,7 +524,7 @@ class CreateTicketViewTest(TestCase):
         req.user = self.user_shimon
 
         with self.assertRaises(Exception):
-            CreateTicketView.as_view()(req)
+            TicketView.as_view()(req)
         self.assertQuerySetEqual(Ticket.objects.all(), [])
 
     def test_options(self):
@@ -534,7 +534,7 @@ class CreateTicketViewTest(TestCase):
 
         req = self.req_factory.options('/')
         req.user = self.user_shimon
-        resp = CreateTicketView.as_view()(req)
+        resp = TicketView.as_view()(req)
         self.assertEqual(resp.status_code, 200)
 
     def test_head(self):
@@ -544,7 +544,7 @@ class CreateTicketViewTest(TestCase):
 
         req = self.req_factory.head('/')
         req.user = self.user_shimon
-        resp = CreateTicketView.as_view()(req)
+        resp = TicketView.as_view()(req)
         self.assertEqual(resp.status_code, 405)
 
     def test_get(self):
@@ -554,7 +554,7 @@ class CreateTicketViewTest(TestCase):
 
         req = self.req_factory.get('/')
         req.user = self.user_shimon
-        resp = CreateTicketView.as_view()(req)
+        resp = TicketView.as_view()(req)
         self.assertEqual(resp.status_code, 405)
 
     def test_put(self):
@@ -564,7 +564,7 @@ class CreateTicketViewTest(TestCase):
 
         req = self.req_factory.put('/')
         req.user = self.user_shimon
-        resp = CreateTicketView.as_view()(req)
+        resp = TicketView.as_view()(req)
         self.assertEqual(resp.status_code, 405)
 
     def test_patch(self):
@@ -574,7 +574,7 @@ class CreateTicketViewTest(TestCase):
 
         req = self.req_factory.patch('/')
         req.user = self.user_shimon
-        resp = CreateTicketView.as_view()(req)
+        resp = TicketView.as_view()(req)
         self.assertEqual(resp.status_code, 405)
 
     def test_delete(self):
@@ -584,7 +584,7 @@ class CreateTicketViewTest(TestCase):
 
         req = self.req_factory.delete('/')
         req.user = self.user_shimon
-        resp = CreateTicketView.as_view()(req)
+        resp = TicketView.as_view()(req)
         self.assertEqual(resp.status_code, 405)
 
     def test_trace(self):
@@ -594,7 +594,7 @@ class CreateTicketViewTest(TestCase):
 
         req = self.req_factory.trace('/')
         req.user = self.user_shimon
-        resp = CreateTicketView.as_view()(req)
+        resp = TicketView.as_view()(req)
         self.assertEqual(resp.status_code, 405)
 
 
@@ -771,7 +771,7 @@ class TicketDetailPageViewTest(TestCase):
         self.assertEqual(resp.status_code, 405)
 
 
-class CreateCommentViewTest(TestCase):
+class CommentViewTest(TestCase):
     '''
     コメントを期待通り作れるか確認する。各期待しないパラメータについて
     は、原則他のすべてのパラメータは期待の値にして検証する。
@@ -799,7 +799,7 @@ class CreateCommentViewTest(TestCase):
         req.user = AnonymousUser()
 
         with self.assertRaises(PermissionDenied):
-            CreateCommentView.as_view()(req)
+            CommentView.as_view()(req)
         self.assertQuerySetEqual(t1.comment_set.all(), [])
 
     def test_ok(self):
@@ -812,7 +812,7 @@ class CreateCommentViewTest(TestCase):
         req = self.req_factory.post('/', data={'key': t1.key, 'comment': t1_c1_comment})
         req.user = self.user_shimon
 
-        resp = CreateCommentView.as_view()(req)
+        resp = CommentView.as_view()(req)
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp['Location'], reverse('page:ticket_detail_page', kwargs={'key': t1.key}))
         self.assertQuerySetEqual(t1.comment_set.all(), [t1.comment_set.get(comment=t1_c1_comment)])
@@ -831,7 +831,7 @@ class CreateCommentViewTest(TestCase):
         req = self.req_factory.post('/', data={'key': t1.key, 'comment': t1_c1_comment, 'extra': 'extra'})
         req.user = self.user_shimon
 
-        resp = CreateCommentView.as_view()(req)
+        resp = CommentView.as_view()(req)
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp['Location'], reverse('page:ticket_detail_page', kwargs={'key': t1.key}))
         self.assertQuerySetEqual(t1.comment_set.all(), [t1.comment_set.get(comment=t1_c1_comment)])
@@ -850,7 +850,7 @@ class CreateCommentViewTest(TestCase):
         req = self.req_factory.post('/', data={'key': t1.key, 'comment': t1_c1_comment})
         req.user = self.user_shimon
 
-        resp = CreateCommentView.as_view()(req)
+        resp = CommentView.as_view()(req)
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp['Location'], reverse('page:ticket_detail_page', kwargs={'key': t1.key}))
         self.assertQuerySetEqual(t1.comment_set.all(), [t1.comment_set.get(comment=t1_c1_comment)])
@@ -868,7 +868,7 @@ class CreateCommentViewTest(TestCase):
         req = self.req_factory.post('/', data={'key': key, 'comment': c1_comment})
         req.user = self.user_shimon
         with self.assertRaises(ObjectDoesNotExist):
-            CreateCommentView.as_view()(req)
+            CommentView.as_view()(req)
         self.assertQuerySetEqual(Comment.objects.all(), [])
 
     def test_no_comment(self):
@@ -885,7 +885,7 @@ class CreateCommentViewTest(TestCase):
         req.user = self.user_shimon
 
         with self.assertRaises(Exception):
-            CreateCommentView.as_view()(req)
+            CommentView.as_view()(req)
         self.assertQuerySetEqual(t1.comment_set.all(), [])
 
     def test_too_long_comment(self):
@@ -902,7 +902,7 @@ class CreateCommentViewTest(TestCase):
         req = self.req_factory.post('/', data={'key': t1.key, 'comment': t1_c1_comment})
         req.user = self.user_shimon
 
-        resp = CreateCommentView.as_view()(req)
+        resp = CommentView.as_view()(req)
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp['Location'], reverse('page:ticket_detail_page', kwargs={'key': t1.key}))
         self.assertQuerySetEqual(t1.comment_set.all(), [t1.comment_set.get(comment=t1_c1_comment)])
@@ -920,7 +920,7 @@ class CreateCommentViewTest(TestCase):
         req = self.req_factory.post('/', data={'key': key, 'comment': c1_comment})
         req.user = self.user_shimon
         with self.assertRaises(ObjectDoesNotExist):
-            CreateCommentView.as_view()(req)
+            CommentView.as_view()(req)
         self.assertQuerySetEqual(Comment.objects.all(), [])
 
     def test_options(self):
@@ -933,7 +933,7 @@ class CreateCommentViewTest(TestCase):
         t1_c1_comment = 'c'
         req = self.req_factory.options('/', data={'key': t1.key, 'comment': t1_c1_comment})
         req.user = self.user_shimon
-        resp = CreateCommentView.as_view()(req)
+        resp = CommentView.as_view()(req)
         self.assertEqual(resp.status_code, 200)
 
     def test_head(self):
@@ -946,7 +946,7 @@ class CreateCommentViewTest(TestCase):
         t1_c1_comment = 'c'
         req = self.req_factory.head('/', data={'key': t1.key, 'comment': t1_c1_comment})
         req.user = self.user_shimon
-        resp = CreateCommentView.as_view()(req)
+        resp = CommentView.as_view()(req)
         self.assertEqual(resp.status_code, 405)
 
     def test_get(self):
@@ -959,7 +959,7 @@ class CreateCommentViewTest(TestCase):
         t1_c1_comment = 'c'
         req = self.req_factory.get('/', data={'key': t1.key, 'comment': t1_c1_comment})
         req.user = self.user_shimon
-        resp = CreateCommentView.as_view()(req)
+        resp = CommentView.as_view()(req)
         self.assertEqual(resp.status_code, 405)
 
     def test_put(self):
@@ -972,7 +972,7 @@ class CreateCommentViewTest(TestCase):
         t1_c1_comment = 'c'
         req = self.req_factory.put('/', data={'key': t1.key, 'comment': t1_c1_comment})
         req.user = self.user_shimon
-        resp = CreateCommentView.as_view()(req)
+        resp = CommentView.as_view()(req)
         self.assertEqual(resp.status_code, 405)
 
     def test_patch(self):
@@ -985,7 +985,7 @@ class CreateCommentViewTest(TestCase):
         t1_c1_comment = 'c'
         req = self.req_factory.patch('/', data={'key': t1.key, 'comment': t1_c1_comment})
         req.user = self.user_shimon
-        resp = CreateCommentView.as_view()(req)
+        resp = CommentView.as_view()(req)
         self.assertEqual(resp.status_code, 405)
 
     def test_delete(self):
@@ -998,7 +998,7 @@ class CreateCommentViewTest(TestCase):
         t1_c1_comment = 'c'
         req = self.req_factory.delete('/', data={'key': t1.key, 'comment': t1_c1_comment})
         req.user = self.user_shimon
-        resp = CreateCommentView.as_view()(req)
+        resp = CommentView.as_view()(req)
         self.assertEqual(resp.status_code, 405)
 
     def test_trace(self):
@@ -1011,7 +1011,7 @@ class CreateCommentViewTest(TestCase):
         t1_c1_comment = 'c'
         req = self.req_factory.trace('/', data={'key': t1.key, 'comment': t1_c1_comment})
         req.user = self.user_shimon
-        resp = CreateCommentView.as_view()(req)
+        resp = CommentView.as_view()(req)
         self.assertEqual(resp.status_code, 405)
 
 
@@ -1200,7 +1200,7 @@ class FilePageViewTest(TestCase):
         self.assertEqual(resp.status_code, 405)
 
 
-class CreateFileViewTest(TestCase):
+class FileViewTest(TestCase):
     '''
     ファイルを期待通り作れるか確認する。各期待しないパラメータについて
     は、他のすべてのパラメータは期待の値にして検証する。
@@ -1230,7 +1230,7 @@ class CreateFileViewTest(TestCase):
         req.user = AnonymousUser()
 
         with self.assertRaises(PermissionDenied):
-            CreateFileView.as_view()(req)
+            FileView.as_view()(req)
         self.assertQuerySetEqual(UploadedFile.objects.all(), [])
         self.assertQuerySetEqual(S3Uploader.objects.all(), [self.s3uploader])
 
@@ -1239,7 +1239,7 @@ class CreateFileViewTest(TestCase):
         req = self.req_factory.post('/', data={'blobkey': self.s3uploader.key, 'filename': f1_name})
         req.user = self.user_shimon
 
-        resp = CreateFileView.as_view()(req)
+        resp = FileView.as_view()(req)
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp['Location'], reverse('page:file_page'))
         self.assertQuerySetEqual(UploadedFile.objects.all(), [UploadedFile.objects.get(name=f1_name)])
@@ -1254,7 +1254,7 @@ class CreateFileViewTest(TestCase):
         req = self.req_factory.post('/', data={'blobkey': self.s3uploader.key, 'filename': f1_name, 'extra': 'extra'})
         req.user = self.user_shimon
 
-        resp = CreateFileView.as_view()(req)
+        resp = FileView.as_view()(req)
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp['Location'], reverse('page:file_page'))
         self.assertQuerySetEqual(UploadedFile.objects.all(), [UploadedFile.objects.get(name=f1_name)])
@@ -1270,7 +1270,7 @@ class CreateFileViewTest(TestCase):
         req.user = self.user_shimon
 
         with self.assertRaises(ObjectDoesNotExist):
-            CreateFileView.as_view()(req)
+            FileView.as_view()(req)
         self.assertQuerySetEqual(UploadedFile.objects.all(), [])
         self.assertQuerySetEqual(S3Uploader.objects.all(), [self.s3uploader])
 
@@ -1283,7 +1283,7 @@ class CreateFileViewTest(TestCase):
         req.user = self.user_shimon
 
         with self.assertRaises(ValidationError):
-            CreateFileView.as_view()(req)
+            FileView.as_view()(req)
         self.assertQuerySetEqual(UploadedFile.objects.all(), [])
         self.assertQuerySetEqual(S3Uploader.objects.all(), [self.s3uploader])
 
@@ -1296,7 +1296,7 @@ class CreateFileViewTest(TestCase):
         req.user = self.user_shimon
 
         with self.assertRaises(Exception):
-            CreateFileView.as_view()(req)
+            FileView.as_view()(req)
         self.assertQuerySetEqual(UploadedFile.objects.all(), [])
         self.assertQuerySetEqual(S3Uploader.objects.all(), [self.s3uploader])
 
@@ -1309,7 +1309,7 @@ class CreateFileViewTest(TestCase):
         req.user = self.user_shimon
 
         with self.assertRaises(Exception):
-            CreateFileView.as_view()(req)
+            FileView.as_view()(req)
         self.assertQuerySetEqual(UploadedFile.objects.all(), [])
         self.assertQuerySetEqual(S3Uploader.objects.all(), [self.s3uploader])
 
@@ -1318,7 +1318,7 @@ class CreateFileViewTest(TestCase):
         req = self.req_factory.post('/', data={'blobkey': self.s3uploader.key, 'filename': f1_name})
         req.user = self.user_shimon
 
-        resp = CreateFileView.as_view()(req)
+        resp = FileView.as_view()(req)
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp['Location'], reverse('page:file_page'))
         self.assertQuerySetEqual(UploadedFile.objects.all(), [UploadedFile.objects.get(name=f1_name)])
@@ -1334,7 +1334,7 @@ class CreateFileViewTest(TestCase):
         req.user = self.user_shimon
 
         with self.assertRaises(DataError):
-            CreateFileView.as_view()(req)
+            FileView.as_view()(req)
         self.assertQuerySetEqual(UploadedFile.objects.all(), [])
         self.assertQuerySetEqual(S3Uploader.objects.all(), [self.s3uploader])
 
@@ -1349,7 +1349,7 @@ class CreateFileViewTest(TestCase):
         req.user = self.user_shimon
 
         with self.assertRaises(Exception):
-            CreateFileView.as_view()(req)
+            FileView.as_view()(req)
         self.assertQuerySetEqual(UploadedFile.objects.all(), [])
         self.assertQuerySetEqual(S3Uploader.objects.all(), [self.s3uploader])
 
@@ -1362,7 +1362,7 @@ class CreateFileViewTest(TestCase):
         req.user = self.user_shimon
 
         with self.assertRaises(Exception):
-            CreateFileView.as_view()(req)
+            FileView.as_view()(req)
         self.assertQuerySetEqual(UploadedFile.objects.all(), [])
         self.assertQuerySetEqual(S3Uploader.objects.all(), [self.s3uploader])
 
@@ -1379,7 +1379,7 @@ class CreateFileViewTest(TestCase):
         req.user = self.user_shimon
 
         with self.assertRaises(ObjectDoesNotExist):
-            CreateFileView.as_view()(req)
+            FileView.as_view()(req)
         self.assertQuerySetEqual(UploadedFile.objects.all(), [])
         self.assertQuerySetEqual(S3Uploader.objects.all(), [self.s3uploader])
 
@@ -1390,7 +1390,7 @@ class CreateFileViewTest(TestCase):
 
         req = self.req_factory.options('/')
         req.user = self.user_shimon
-        resp = CreateFileView.as_view()(req)
+        resp = FileView.as_view()(req)
         self.assertEqual(resp.status_code, 200)
 
     def test_head(self):
@@ -1400,7 +1400,7 @@ class CreateFileViewTest(TestCase):
 
         req = self.req_factory.head('/')
         req.user = self.user_shimon
-        resp = CreateFileView.as_view()(req)
+        resp = FileView.as_view()(req)
         self.assertEqual(resp.status_code, 405)
 
     def test_get(self):
@@ -1410,7 +1410,7 @@ class CreateFileViewTest(TestCase):
 
         req = self.req_factory.get('/')
         req.user = self.user_shimon
-        resp = CreateFileView.as_view()(req)
+        resp = FileView.as_view()(req)
         self.assertEqual(resp.status_code, 405)
 
     def test_put(self):
@@ -1420,7 +1420,7 @@ class CreateFileViewTest(TestCase):
 
         req = self.req_factory.put('/')
         req.user = self.user_shimon
-        resp = CreateFileView.as_view()(req)
+        resp = FileView.as_view()(req)
         self.assertEqual(resp.status_code, 405)
 
     def test_patch(self):
@@ -1430,7 +1430,7 @@ class CreateFileViewTest(TestCase):
 
         req = self.req_factory.patch('/')
         req.user = self.user_shimon
-        resp = CreateFileView.as_view()(req)
+        resp = FileView.as_view()(req)
         self.assertEqual(resp.status_code, 405)
 
     def test_delete(self):
@@ -1440,7 +1440,7 @@ class CreateFileViewTest(TestCase):
 
         req = self.req_factory.delete('/')
         req.user = self.user_shimon
-        resp = CreateFileView.as_view()(req)
+        resp = FileView.as_view()(req)
         self.assertEqual(resp.status_code, 405)
 
     def test_trace(self):
@@ -1450,7 +1450,7 @@ class CreateFileViewTest(TestCase):
 
         req = self.req_factory.trace('/')
         req.user = self.user_shimon
-        resp = CreateFileView.as_view()(req)
+        resp = FileView.as_view()(req)
         self.assertEqual(resp.status_code, 405)
 
 

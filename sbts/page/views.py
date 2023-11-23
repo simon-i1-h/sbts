@@ -56,7 +56,7 @@ class FilePageView(BaseFilePageView):
         return ctx
 
 
-class CreateFileView(LoginRequiredView):
+class FileView(LoginRequiredView):
     def post(self, request, *args, **kwargs):
         UploadedFile.objects.create_from_s3(
             key=request.POST['blobkey'],
@@ -76,7 +76,7 @@ class TicketPageView(BaseTicketPageView):
         return ctx
 
 
-class CreateTicketView(LoginRequiredView):
+class TicketView(LoginRequiredView):
     def post(self, request, *args, **kwargs):
         now = timezone.now()
         Ticket.objects.create(key=uuid.uuid4(),
@@ -98,7 +98,7 @@ class TicketDetailPageView(BaseTicketPageView):
         return ctx
 
 
-class CreateCommentView(LoginRequiredView):
+class CommentView(LoginRequiredView):
     def post(self, request, *args, **kwargs):
         now = timezone.now()
         t = Ticket.objects.get(key=request.POST['key'])
