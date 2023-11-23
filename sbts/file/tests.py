@@ -167,21 +167,21 @@ class UploadedFileCreateFromS3Test(TestCase):
             'shimon', 'shimon@example.com', 'pw')
         # 実際にアップロードしようとすると、タイミングの問題でS3にアクセスできない。
         # S3にアクセスする必要はないので、テストではupload_blobを使わず、単にオブジェクトを作成しておく。
-        cls.blob = S3Uploader.objects.create(
+        cls.s3uploader = S3Uploader.objects.create(
             status=S3Uploader.COMPLETED, username=cls.user_shimon.username, size=6)
 
     def test_ok(self):
         filename = 'hello.txt'
         lastmod = datetime.datetime.fromisoformat('2023-11-04T12:00:00Z')
         f1 = UploadedFile.objects.create_from_s3(
-            self.blob.key, self.user_shimon.username, filename, lastmod)
+            self.s3uploader.key, self.user_shimon.username, filename, lastmod)
 
         self.assertQuerySetEqual(UploadedFile.objects.all(), [f1])
         self.assertQuerySetEqual(S3Uploader.objects.all(), [])
-        self.assertEqual(f1.key, self.blob.key)
+        self.assertEqual(f1.key, self.s3uploader.key)
         self.assertEqual(f1.name, filename)
         self.assertEqual(f1.last_modified, lastmod)
-        self.assertEqual(f1.size, self.blob.size)
+        self.assertEqual(f1.size, self.s3uploader.size)
         self.assertEqual(f1.username, self.user_shimon.username)
 
     def test_empty_key(self):
@@ -193,11 +193,11 @@ class UploadedFileCreateFromS3Test(TestCase):
                 '', self.user_shimon.username, filename, lastmod)
 
         self.assertQuerySetEqual(UploadedFile.objects.all(), [])
-        self.assertQuerySetEqual(S3Uploader.objects.all(), [self.blob])
+        self.assertQuerySetEqual(S3Uploader.objects.all(), [self.s3uploader])
 
     def test_invalid_key(self):
         key = uuid.UUID('6b1ec55f-3e41-4780-aa71-0fbbbe4e0d5d')
-        self.assertNotEqual(key, self.blob.key)
+        self.assertNotEqual(key, self.s3uploader.key)
 
         filename = 'hello.txt'
         lastmod = datetime.datetime.fromisoformat('2023-11-04T12:00:00Z')
@@ -207,7 +207,7 @@ class UploadedFileCreateFromS3Test(TestCase):
                 key, self.user_shimon.username, filename, lastmod)
 
         self.assertQuerySetEqual(UploadedFile.objects.all(), [])
-        self.assertQuerySetEqual(S3Uploader.objects.all(), [self.blob])
+        self.assertQuerySetEqual(S3Uploader.objects.all(), [self.s3uploader])
 
     def test_invalid_username(self):
         username = ''.join(random.Random(2).choices(string.ascii_lowercase, k=151))
@@ -216,10 +216,10 @@ class UploadedFileCreateFromS3Test(TestCase):
 
         with self.assertRaises(ObjectDoesNotExist):
             UploadedFile.objects.create_from_s3(
-                self.blob.key, username, filename, lastmod)
+                self.s3uploader.key, username, filename, lastmod)
 
         self.assertQuerySetEqual(UploadedFile.objects.all(), [])
-        self.assertQuerySetEqual(S3Uploader.objects.all(), [self.blob])
+        self.assertQuerySetEqual(S3Uploader.objects.all(), [self.s3uploader])
 
     def test_invalid_filename(self):
         filename = ''.join(random.Random(3).choices(string.ascii_lowercase, k=256))
@@ -227,10 +227,10 @@ class UploadedFileCreateFromS3Test(TestCase):
 
         with self.assertRaises(DataError):
             UploadedFile.objects.create_from_s3(
-                self.blob.key, self.user_shimon.username, filename, lastmod)
+                self.s3uploader.key, self.user_shimon.username, filename, lastmod)
 
         self.assertQuerySetEqual(UploadedFile.objects.all(), [])
-        self.assertQuerySetEqual(S3Uploader.objects.all(), [self.blob])
+        self.assertQuerySetEqual(S3Uploader.objects.all(), [self.s3uploader])
 
 
 class BlobViewTest(ObjectStorageTestCase):

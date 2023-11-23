@@ -1214,7 +1214,7 @@ class CreateFileViewTest(TestCase):
         # 実際にアップロードしようとすると、タイミングの問題でS3にアク
         # セスできない。S3にアクセスする必要はないので、テストでは
         # upload_blobを使わず、単にオブジェクトを作成しておく。
-        cls.blob = S3Uploader.objects.create(
+        cls.s3uploader = S3Uploader.objects.create(
             status=S3Uploader.COMPLETED, username=cls.user_shimon.username, size=6)
 
     def setUp(self):
@@ -1226,17 +1226,17 @@ class CreateFileViewTest(TestCase):
         未ログインはファイル作成不可
         '''
 
-        req = self.req_factory.post('/', data={'blobkey': self.blob.key, 'filename': 'hello.txt'})
+        req = self.req_factory.post('/', data={'blobkey': self.s3uploader.key, 'filename': 'hello.txt'})
         req.user = AnonymousUser()
 
         with self.assertRaises(PermissionDenied):
             CreateFileView.as_view()(req)
         self.assertQuerySetEqual(UploadedFile.objects.all(), [])
-        self.assertQuerySetEqual(S3Uploader.objects.all(), [self.blob])
+        self.assertQuerySetEqual(S3Uploader.objects.all(), [self.s3uploader])
 
     def test_ok(self):
         f1_name = 'hello.txt'
-        req = self.req_factory.post('/', data={'blobkey': self.blob.key, 'filename': f1_name})
+        req = self.req_factory.post('/', data={'blobkey': self.s3uploader.key, 'filename': f1_name})
         req.user = self.user_shimon
 
         resp = CreateFileView.as_view()(req)
@@ -1251,7 +1251,7 @@ class CreateFileViewTest(TestCase):
         '''
 
         f1_name = 'hello.txt'
-        req = self.req_factory.post('/', data={'blobkey': self.blob.key, 'filename': f1_name, 'extra': 'extra'})
+        req = self.req_factory.post('/', data={'blobkey': self.s3uploader.key, 'filename': f1_name, 'extra': 'extra'})
         req.user = self.user_shimon
 
         resp = CreateFileView.as_view()(req)
@@ -1272,7 +1272,7 @@ class CreateFileViewTest(TestCase):
         with self.assertRaises(ObjectDoesNotExist):
             CreateFileView.as_view()(req)
         self.assertQuerySetEqual(UploadedFile.objects.all(), [])
-        self.assertQuerySetEqual(S3Uploader.objects.all(), [self.blob])
+        self.assertQuerySetEqual(S3Uploader.objects.all(), [self.s3uploader])
 
     def test_empty_blobkey(self):
         '''
@@ -1285,7 +1285,7 @@ class CreateFileViewTest(TestCase):
         with self.assertRaises(ValidationError):
             CreateFileView.as_view()(req)
         self.assertQuerySetEqual(UploadedFile.objects.all(), [])
-        self.assertQuerySetEqual(S3Uploader.objects.all(), [self.blob])
+        self.assertQuerySetEqual(S3Uploader.objects.all(), [self.s3uploader])
 
     def test_no_blobkey(self):
         '''
@@ -1298,24 +1298,24 @@ class CreateFileViewTest(TestCase):
         with self.assertRaises(Exception):
             CreateFileView.as_view()(req)
         self.assertQuerySetEqual(UploadedFile.objects.all(), [])
-        self.assertQuerySetEqual(S3Uploader.objects.all(), [self.blob])
+        self.assertQuerySetEqual(S3Uploader.objects.all(), [self.s3uploader])
 
     def test_no_filename(self):
         '''
         ファイル名が無いなら例外を送出
         '''
 
-        req = self.req_factory.post('/', data={'blobkey': self.blob.key})
+        req = self.req_factory.post('/', data={'blobkey': self.s3uploader.key})
         req.user = self.user_shimon
 
         with self.assertRaises(Exception):
             CreateFileView.as_view()(req)
         self.assertQuerySetEqual(UploadedFile.objects.all(), [])
-        self.assertQuerySetEqual(S3Uploader.objects.all(), [self.blob])
+        self.assertQuerySetEqual(S3Uploader.objects.all(), [self.s3uploader])
 
     def test_empty_filename(self):
         f1_name = ''
-        req = self.req_factory.post('/', data={'blobkey': self.blob.key, 'filename': f1_name})
+        req = self.req_factory.post('/', data={'blobkey': self.s3uploader.key, 'filename': f1_name})
         req.user = self.user_shimon
 
         resp = CreateFileView.as_view()(req)
@@ -1330,13 +1330,13 @@ class CreateFileViewTest(TestCase):
         '''
 
         f1_name = ''.join(random.Random(0).choices(string.ascii_lowercase, k=256))
-        req = self.req_factory.post('/', data={'blobkey': self.blob.key, 'filename': f1_name})
+        req = self.req_factory.post('/', data={'blobkey': self.s3uploader.key, 'filename': f1_name})
         req.user = self.user_shimon
 
         with self.assertRaises(DataError):
             CreateFileView.as_view()(req)
         self.assertQuerySetEqual(UploadedFile.objects.all(), [])
-        self.assertQuerySetEqual(S3Uploader.objects.all(), [self.blob])
+        self.assertQuerySetEqual(S3Uploader.objects.all(), [self.s3uploader])
 
     def test_invalid(self):
         '''
@@ -1351,7 +1351,7 @@ class CreateFileViewTest(TestCase):
         with self.assertRaises(Exception):
             CreateFileView.as_view()(req)
         self.assertQuerySetEqual(UploadedFile.objects.all(), [])
-        self.assertQuerySetEqual(S3Uploader.objects.all(), [self.blob])
+        self.assertQuerySetEqual(S3Uploader.objects.all(), [self.s3uploader])
 
     def test_no(self):
         '''
@@ -1364,24 +1364,24 @@ class CreateFileViewTest(TestCase):
         with self.assertRaises(Exception):
             CreateFileView.as_view()(req)
         self.assertQuerySetEqual(UploadedFile.objects.all(), [])
-        self.assertQuerySetEqual(S3Uploader.objects.all(), [self.blob])
+        self.assertQuerySetEqual(S3Uploader.objects.all(), [self.s3uploader])
 
     def test_other_user_blob(self):
         '''
         他ユーザーのブロブを横取りしてファイルを作ることは出来ない。
         '''
 
-        self.blob.username = 'john'
-        self.blob.save()
+        self.s3uploader.username = 'john'
+        self.s3uploader.save()
 
         f1_name = 'hello.txt'
-        req = self.req_factory.post('/', data={'blobkey': self.blob.key, 'filename': f1_name})
+        req = self.req_factory.post('/', data={'blobkey': self.s3uploader.key, 'filename': f1_name})
         req.user = self.user_shimon
 
         with self.assertRaises(ObjectDoesNotExist):
             CreateFileView.as_view()(req)
         self.assertQuerySetEqual(UploadedFile.objects.all(), [])
-        self.assertQuerySetEqual(S3Uploader.objects.all(), [self.blob])
+        self.assertQuerySetEqual(S3Uploader.objects.all(), [self.s3uploader])
 
     def test_options(self):
         '''
