@@ -1226,7 +1226,7 @@ class CreateFileViewTest(TestCase):
         未ログインはファイル作成不可
         '''
 
-        req = self.req_factory.post('/', data={'blobkey': self.blob.id, 'filename': 'hello.txt'})
+        req = self.req_factory.post('/', data={'blobkey': self.blob.key, 'filename': 'hello.txt'})
         req.user = AnonymousUser()
 
         with self.assertRaises(PermissionDenied):
@@ -1236,7 +1236,7 @@ class CreateFileViewTest(TestCase):
 
     def test_ok(self):
         f1_name = 'hello.txt'
-        req = self.req_factory.post('/', data={'blobkey': self.blob.id, 'filename': f1_name})
+        req = self.req_factory.post('/', data={'blobkey': self.blob.key, 'filename': f1_name})
         req.user = self.user_shimon
 
         resp = CreateFileView.as_view()(req)
@@ -1251,7 +1251,7 @@ class CreateFileViewTest(TestCase):
         '''
 
         f1_name = 'hello.txt'
-        req = self.req_factory.post('/', data={'blobkey': self.blob.id, 'filename': f1_name, 'extra': 'extra'})
+        req = self.req_factory.post('/', data={'blobkey': self.blob.key, 'filename': f1_name, 'extra': 'extra'})
         req.user = self.user_shimon
 
         resp = CreateFileView.as_view()(req)
@@ -1305,7 +1305,7 @@ class CreateFileViewTest(TestCase):
         ファイル名が無いなら例外を送出
         '''
 
-        req = self.req_factory.post('/', data={'blobkey': self.blob.id})
+        req = self.req_factory.post('/', data={'blobkey': self.blob.key})
         req.user = self.user_shimon
 
         with self.assertRaises(Exception):
@@ -1315,7 +1315,7 @@ class CreateFileViewTest(TestCase):
 
     def test_empty_filename(self):
         f1_name = ''
-        req = self.req_factory.post('/', data={'blobkey': self.blob.id, 'filename': f1_name})
+        req = self.req_factory.post('/', data={'blobkey': self.blob.key, 'filename': f1_name})
         req.user = self.user_shimon
 
         resp = CreateFileView.as_view()(req)
@@ -1330,7 +1330,7 @@ class CreateFileViewTest(TestCase):
         '''
 
         f1_name = ''.join(random.Random(0).choices(string.ascii_lowercase, k=256))
-        req = self.req_factory.post('/', data={'blobkey': self.blob.id, 'filename': f1_name})
+        req = self.req_factory.post('/', data={'blobkey': self.blob.key, 'filename': f1_name})
         req.user = self.user_shimon
 
         with self.assertRaises(DataError):
@@ -1375,7 +1375,7 @@ class CreateFileViewTest(TestCase):
         self.blob.save()
 
         f1_name = 'hello.txt'
-        req = self.req_factory.post('/', data={'blobkey': self.blob.id, 'filename': f1_name})
+        req = self.req_factory.post('/', data={'blobkey': self.blob.key, 'filename': f1_name})
         req.user = self.user_shimon
 
         with self.assertRaises(ObjectDoesNotExist):

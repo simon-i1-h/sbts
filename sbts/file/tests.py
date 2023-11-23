@@ -39,7 +39,7 @@ class UploadFileTest(ObjectStorageTestCase):
         s3obj = s3client.get_object(Bucket=settings.S3_BUCKET_FILE, Key=str(key))
 
         self.assertEqual(s3obj['Body'].read(), content)
-        o1 = S3Uploader.objects.get(id=key)
+        o1 = S3Uploader.objects.get(key=key)
         self.assertQuerySetEqual(S3Uploader.objects.all(), [o1])
         self.assertEqual(o1.status, S3Uploader.COMPLETED)
         self.assertEqual(o1.username, self.user_shimon.username)
@@ -58,7 +58,7 @@ class UploadFileTest(ObjectStorageTestCase):
         s3obj = s3client.get_object(Bucket=settings.S3_BUCKET_FILE, Key=str(key))
 
         self.assertEqual(s3obj['Body'].read(), content)
-        o1 = S3Uploader.objects.get(id=key)
+        o1 = S3Uploader.objects.get(key=key)
         self.assertQuerySetEqual(S3Uploader.objects.all(), [o1])
         self.assertEqual(o1.status, S3Uploader.COMPLETED)
         self.assertEqual(o1.username, self.user_shimon.username)
@@ -77,7 +77,7 @@ class UploadFileTest(ObjectStorageTestCase):
         s3obj = s3client.get_object(Bucket=settings.S3_BUCKET_FILE, Key=str(key))
 
         self.assertEqual(s3obj['Body'].read(), content)
-        o1 = S3Uploader.objects.get(id=key)
+        o1 = S3Uploader.objects.get(key=key)
         self.assertQuerySetEqual(S3Uploader.objects.all(), [o1])
         self.assertEqual(o1.status, S3Uploader.COMPLETED)
         self.assertEqual(o1.username, self.user_shimon.username)
@@ -96,7 +96,7 @@ class UploadFileTest(ObjectStorageTestCase):
         s3obj = s3client.get_object(Bucket=settings.S3_BUCKET_FILE, Key=str(key))
 
         self.assertEqual(s3obj['Body'].read(), content)
-        o1 = S3Uploader.objects.get(id=key)
+        o1 = S3Uploader.objects.get(key=key)
         self.assertQuerySetEqual(S3Uploader.objects.all(), [o1])
         self.assertEqual(o1.status, S3Uploader.COMPLETED)
         self.assertEqual(o1.username, self.user_shimon.username)
@@ -132,7 +132,7 @@ class UploadFileTest(ObjectStorageTestCase):
         s3obj = s3client.get_object(Bucket=settings.S3_BUCKET_FILE, Key=str(key))
 
         self.assertEqual(s3obj['Body'].read(), content)
-        o1 = S3Uploader.objects.get(id=key)
+        o1 = S3Uploader.objects.get(key=key)
         self.assertQuerySetEqual(S3Uploader.objects.all(), [o1])
         self.assertEqual(o1.status, S3Uploader.COMPLETED)
         self.assertEqual(o1.username, username)
@@ -174,11 +174,11 @@ class UploadedFileCreateFromS3Test(TestCase):
         filename = 'hello.txt'
         lastmod = datetime.datetime.fromisoformat('2023-11-04T12:00:00Z')
         f1 = UploadedFile.objects.create_from_s3(
-            self.blob.id, self.user_shimon.username, filename, lastmod)
+            self.blob.key, self.user_shimon.username, filename, lastmod)
 
         self.assertQuerySetEqual(UploadedFile.objects.all(), [f1])
         self.assertQuerySetEqual(S3Uploader.objects.all(), [])
-        self.assertEqual(f1.key, self.blob.id)
+        self.assertEqual(f1.key, self.blob.key)
         self.assertEqual(f1.name, filename)
         self.assertEqual(f1.last_modified, lastmod)
         self.assertEqual(f1.size, self.blob.size)
@@ -197,7 +197,7 @@ class UploadedFileCreateFromS3Test(TestCase):
 
     def test_invalid_key(self):
         key = uuid.UUID('6b1ec55f-3e41-4780-aa71-0fbbbe4e0d5d')
-        self.assertNotEqual(key, self.blob.id)
+        self.assertNotEqual(key, self.blob.key)
 
         filename = 'hello.txt'
         lastmod = datetime.datetime.fromisoformat('2023-11-04T12:00:00Z')
@@ -216,7 +216,7 @@ class UploadedFileCreateFromS3Test(TestCase):
 
         with self.assertRaises(ObjectDoesNotExist):
             UploadedFile.objects.create_from_s3(
-                self.blob.id, username, filename, lastmod)
+                self.blob.key, username, filename, lastmod)
 
         self.assertQuerySetEqual(UploadedFile.objects.all(), [])
         self.assertQuerySetEqual(S3Uploader.objects.all(), [self.blob])
@@ -227,7 +227,7 @@ class UploadedFileCreateFromS3Test(TestCase):
 
         with self.assertRaises(DataError):
             UploadedFile.objects.create_from_s3(
-                self.blob.id, self.user_shimon.username, filename, lastmod)
+                self.blob.key, self.user_shimon.username, filename, lastmod)
 
         self.assertQuerySetEqual(UploadedFile.objects.all(), [])
         self.assertQuerySetEqual(S3Uploader.objects.all(), [self.blob])
@@ -397,10 +397,10 @@ class UploadViewTest(ObjectStorageTestCase):
         self.assertQuerySetEqual(S3Uploader.objects.all(), [o1])
 
         s3client = boto3.client('s3', endpoint_url=settings.S3_ENDPOINT)
-        s3obj = s3client.get_object(Bucket=settings.S3_BUCKET_FILE, Key=str(o1.id))
+        s3obj = s3client.get_object(Bucket=settings.S3_BUCKET_FILE, Key=str(o1.key))
         self.assertEqual(s3obj['Body'].read(), content)
 
-        self.assertEqual(json.loads(resp.content)['key'], str(o1.id))
+        self.assertEqual(json.loads(resp.content)['key'], str(o1.key))
         self.assertEqual(resp.status_code, 200)
 
     def test_0byte(self):
@@ -421,10 +421,10 @@ class UploadViewTest(ObjectStorageTestCase):
         self.assertQuerySetEqual(S3Uploader.objects.all(), [o1])
 
         s3client = boto3.client('s3', endpoint_url=settings.S3_ENDPOINT)
-        s3obj = s3client.get_object(Bucket=settings.S3_BUCKET_FILE, Key=str(o1.id))
+        s3obj = s3client.get_object(Bucket=settings.S3_BUCKET_FILE, Key=str(o1.key))
         self.assertEqual(s3obj['Body'].read(), content)
 
-        self.assertEqual(json.loads(resp.content)['key'], str(o1.id))
+        self.assertEqual(json.loads(resp.content)['key'], str(o1.key))
         self.assertEqual(resp.status_code, 200)
 
     def test_chunk(self):
@@ -445,10 +445,10 @@ class UploadViewTest(ObjectStorageTestCase):
         self.assertQuerySetEqual(S3Uploader.objects.all(), [o1])
 
         s3client = boto3.client('s3', endpoint_url=settings.S3_ENDPOINT)
-        s3obj = s3client.get_object(Bucket=settings.S3_BUCKET_FILE, Key=str(o1.id))
+        s3obj = s3client.get_object(Bucket=settings.S3_BUCKET_FILE, Key=str(o1.key))
         self.assertEqual(s3obj['Body'].read(), content)
 
-        self.assertEqual(json.loads(resp.content)['key'], str(o1.id))
+        self.assertEqual(json.loads(resp.content)['key'], str(o1.key))
         self.assertEqual(resp.status_code, 200)
 
     def test_chunk_plus_1(self):
@@ -469,10 +469,10 @@ class UploadViewTest(ObjectStorageTestCase):
         self.assertQuerySetEqual(S3Uploader.objects.all(), [o1])
 
         s3client = boto3.client('s3', endpoint_url=settings.S3_ENDPOINT)
-        s3obj = s3client.get_object(Bucket=settings.S3_BUCKET_FILE, Key=str(o1.id))
+        s3obj = s3client.get_object(Bucket=settings.S3_BUCKET_FILE, Key=str(o1.key))
         self.assertEqual(s3obj['Body'].read(), content)
 
-        self.assertEqual(json.loads(resp.content)['key'], str(o1.id))
+        self.assertEqual(json.loads(resp.content)['key'], str(o1.key))
         self.assertEqual(resp.status_code, 200)
 
     def test_options(self):

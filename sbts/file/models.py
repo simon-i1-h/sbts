@@ -9,7 +9,7 @@ class UploadedFile(models.Model):
         def create_from_s3(self, key, username, name, last_modified, **kwargs):
             with transaction.atomic():
                 uploader = S3Uploader.objects.get(
-                    id=key,
+                    key=key,
                     status=S3Uploader.COMPLETED,
                     size__isnull=False,
                     # 他のユーザーのブロブは参照できない
@@ -47,7 +47,7 @@ class S3Uploader(models.Model):
         (UPLOADING, 'Uploading'),
     ]
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    key = models.UUIDField(primary_key=True, default=uuid.uuid4)
     status = models.IntegerField(choices=STATUS_CHOICES)
     size = models.BigIntegerField(null=True)
     username = models.CharField(max_length=150)
@@ -59,7 +59,7 @@ class S3Uploader(models.Model):
 
         with transaction.atomic(durable=True):
             cls.objects.create(
-                id=key,
+                key=key,
                 status=cls.UPLOADING,
                 username=username)
 
@@ -108,7 +108,7 @@ class S3Uploader(models.Model):
             UploadId=upload_id)
 
         with transaction.atomic(durable=True):
-            uploader = cls.objects.get(id=key, status=cls.UPLOADING)
+            uploader = cls.objects.get(key=key, status=cls.UPLOADING)
             uploader.status = cls.COMPLETED
             uploader.size = size
             uploader.save()
