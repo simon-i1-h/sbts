@@ -101,13 +101,13 @@ class TicketDetailPageView(BaseTicketPageView):
 class CreateCommentView(LoginRequiredView):
     def post(self, request, *args, **kwargs):
         now = timezone.now()
-        t = Ticket.objects.get(key=kwargs['key'])
+        t = Ticket.objects.get(key=request.POST['key'])
         t.comment_set.create(key=uuid.uuid4(),
                              comment=request.POST['comment'],
                              created_at=now)
 
         url = reverse('page:ticket_detail', kwargs={
-            'key': kwargs['key'],
+            'key': request.POST['key'],
         })
         return HttpResponseRedirect(url)
 

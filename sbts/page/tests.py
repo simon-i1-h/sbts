@@ -795,11 +795,11 @@ class CreateCommentViewTest(TestCase):
         t1_dt = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
         t1 = Ticket.objects.create(title='ticket 1', created_at=t1_dt)
 
-        req = self.req_factory.post('/', data={'comment': 'c'})
+        req = self.req_factory.post('/', data={'key': t1.key, 'comment': 'c'})
         req.user = AnonymousUser()
 
         with self.assertRaises(PermissionDenied):
-            CreateCommentView.as_view()(req, key=t1.key)
+            CreateCommentView.as_view()(req)
         self.assertQuerySetEqual(t1.comment_set.all(), [])
 
     def test_ok(self):
@@ -809,10 +809,10 @@ class CreateCommentViewTest(TestCase):
         self.assertQuerySetEqual(t1.comment_set.all(), [])
 
         t1_c1_comment = 'c'
-        req = self.req_factory.post('/', data={'comment': t1_c1_comment})
+        req = self.req_factory.post('/', data={'key': t1.key, 'comment': t1_c1_comment})
         req.user = self.user_shimon
 
-        resp = CreateCommentView.as_view()(req, key=t1.key)
+        resp = CreateCommentView.as_view()(req)
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp['Location'], reverse('page:ticket_detail', kwargs={'key': t1.key}))
         self.assertQuerySetEqual(t1.comment_set.all(), [t1.comment_set.get(comment=t1_c1_comment)])
@@ -828,10 +828,10 @@ class CreateCommentViewTest(TestCase):
         self.assertQuerySetEqual(t1.comment_set.all(), [])
 
         t1_c1_comment = 'c'
-        req = self.req_factory.post('/', data={'comment': t1_c1_comment, 'extra': 'extra'})
+        req = self.req_factory.post('/', data={'key': t1.key, 'comment': t1_c1_comment, 'extra': 'extra'})
         req.user = self.user_shimon
 
-        resp = CreateCommentView.as_view()(req, key=t1.key)
+        resp = CreateCommentView.as_view()(req)
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp['Location'], reverse('page:ticket_detail', kwargs={'key': t1.key}))
         self.assertQuerySetEqual(t1.comment_set.all(), [t1.comment_set.get(comment=t1_c1_comment)])
@@ -847,10 +847,10 @@ class CreateCommentViewTest(TestCase):
         self.assertQuerySetEqual(t1.comment_set.all(), [])
 
         t1_c1_comment = ''
-        req = self.req_factory.post('/', data={'comment': t1_c1_comment})
+        req = self.req_factory.post('/', data={'key': t1.key, 'comment': t1_c1_comment})
         req.user = self.user_shimon
 
-        resp = CreateCommentView.as_view()(req, key=t1.key)
+        resp = CreateCommentView.as_view()(req)
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp['Location'], reverse('page:ticket_detail', kwargs={'key': t1.key}))
         self.assertQuerySetEqual(t1.comment_set.all(), [t1.comment_set.get(comment=t1_c1_comment)])
@@ -865,10 +865,10 @@ class CreateCommentViewTest(TestCase):
         self.assertQuerySetEqual(Comment.objects.all(), [])
 
         c1_comment = 'c'
-        req = self.req_factory.post('/', data={'comment': c1_comment})
+        req = self.req_factory.post('/', data={'key': key, 'comment': c1_comment})
         req.user = self.user_shimon
         with self.assertRaises(ObjectDoesNotExist):
-            CreateCommentView.as_view()(req, key=key)
+            CreateCommentView.as_view()(req)
         self.assertQuerySetEqual(Comment.objects.all(), [])
 
     def test_no_comment(self):
@@ -881,11 +881,11 @@ class CreateCommentViewTest(TestCase):
 
         self.assertQuerySetEqual(t1.comment_set.all(), [])
 
-        req = self.req_factory.post('/', data={})
+        req = self.req_factory.post('/', data={'key': t1.key})
         req.user = self.user_shimon
 
         with self.assertRaises(Exception):
-            CreateCommentView.as_view()(req, key=t1.key)
+            CreateCommentView.as_view()(req)
         self.assertQuerySetEqual(t1.comment_set.all(), [])
 
     def test_too_long_comment(self):
@@ -899,10 +899,10 @@ class CreateCommentViewTest(TestCase):
         self.assertQuerySetEqual(t1.comment_set.all(), [])
 
         t1_c1_comment = 'c' * 1024 * 1024
-        req = self.req_factory.post('/', data={'comment': t1_c1_comment})
+        req = self.req_factory.post('/', data={'key': t1.key, 'comment': t1_c1_comment})
         req.user = self.user_shimon
 
-        resp = CreateCommentView.as_view()(req, key=t1.key)
+        resp = CreateCommentView.as_view()(req)
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp['Location'], reverse('page:ticket_detail', kwargs={'key': t1.key}))
         self.assertQuerySetEqual(t1.comment_set.all(), [t1.comment_set.get(comment=t1_c1_comment)])
@@ -917,10 +917,10 @@ class CreateCommentViewTest(TestCase):
         self.assertQuerySetEqual(Comment.objects.all(), [])
 
         c1_comment = 'c' * 1024 * 1024
-        req = self.req_factory.post('/', data={'comment': c1_comment})
+        req = self.req_factory.post('/', data={'key': key, 'comment': c1_comment})
         req.user = self.user_shimon
         with self.assertRaises(ObjectDoesNotExist):
-            CreateCommentView.as_view()(req, key=key)
+            CreateCommentView.as_view()(req)
         self.assertQuerySetEqual(Comment.objects.all(), [])
 
     def test_options(self):
@@ -931,9 +931,9 @@ class CreateCommentViewTest(TestCase):
         t1_dt = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
         t1 = Ticket.objects.create(title='ticket 1', created_at=t1_dt)
         t1_c1_comment = 'c'
-        req = self.req_factory.options('/', data={'comment': t1_c1_comment})
+        req = self.req_factory.options('/', data={'key': t1.key, 'comment': t1_c1_comment})
         req.user = self.user_shimon
-        resp = CreateCommentView.as_view()(req, key=t1.key)
+        resp = CreateCommentView.as_view()(req)
         self.assertEqual(resp.status_code, 200)
 
     def test_head(self):
@@ -944,9 +944,9 @@ class CreateCommentViewTest(TestCase):
         t1_dt = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
         t1 = Ticket.objects.create(title='ticket 1', created_at=t1_dt)
         t1_c1_comment = 'c'
-        req = self.req_factory.head('/', data={'comment': t1_c1_comment})
+        req = self.req_factory.head('/', data={'key': t1.key, 'comment': t1_c1_comment})
         req.user = self.user_shimon
-        resp = CreateCommentView.as_view()(req, key=t1.key)
+        resp = CreateCommentView.as_view()(req)
         self.assertEqual(resp.status_code, 405)
 
     def test_get(self):
@@ -957,9 +957,9 @@ class CreateCommentViewTest(TestCase):
         t1_dt = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
         t1 = Ticket.objects.create(title='ticket 1', created_at=t1_dt)
         t1_c1_comment = 'c'
-        req = self.req_factory.get('/', data={'comment': t1_c1_comment})
+        req = self.req_factory.get('/', data={'key': t1.key, 'comment': t1_c1_comment})
         req.user = self.user_shimon
-        resp = CreateCommentView.as_view()(req, key=t1.key)
+        resp = CreateCommentView.as_view()(req)
         self.assertEqual(resp.status_code, 405)
 
     def test_put(self):
@@ -970,9 +970,9 @@ class CreateCommentViewTest(TestCase):
         t1_dt = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
         t1 = Ticket.objects.create(title='ticket 1', created_at=t1_dt)
         t1_c1_comment = 'c'
-        req = self.req_factory.put('/', data={'comment': t1_c1_comment})
+        req = self.req_factory.put('/', data={'key': t1.key, 'comment': t1_c1_comment})
         req.user = self.user_shimon
-        resp = CreateCommentView.as_view()(req, key=t1.key)
+        resp = CreateCommentView.as_view()(req)
         self.assertEqual(resp.status_code, 405)
 
     def test_patch(self):
@@ -983,9 +983,9 @@ class CreateCommentViewTest(TestCase):
         t1_dt = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
         t1 = Ticket.objects.create(title='ticket 1', created_at=t1_dt)
         t1_c1_comment = 'c'
-        req = self.req_factory.patch('/', data={'comment': t1_c1_comment})
+        req = self.req_factory.patch('/', data={'key': t1.key, 'comment': t1_c1_comment})
         req.user = self.user_shimon
-        resp = CreateCommentView.as_view()(req, key=t1.key)
+        resp = CreateCommentView.as_view()(req)
         self.assertEqual(resp.status_code, 405)
 
     def test_delete(self):
@@ -996,9 +996,9 @@ class CreateCommentViewTest(TestCase):
         t1_dt = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
         t1 = Ticket.objects.create(title='ticket 1', created_at=t1_dt)
         t1_c1_comment = 'c'
-        req = self.req_factory.delete('/', data={'comment': t1_c1_comment})
+        req = self.req_factory.delete('/', data={'key': t1.key, 'comment': t1_c1_comment})
         req.user = self.user_shimon
-        resp = CreateCommentView.as_view()(req, key=t1.key)
+        resp = CreateCommentView.as_view()(req)
         self.assertEqual(resp.status_code, 405)
 
     def test_trace(self):
@@ -1009,9 +1009,9 @@ class CreateCommentViewTest(TestCase):
         t1_dt = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
         t1 = Ticket.objects.create(title='ticket 1', created_at=t1_dt)
         t1_c1_comment = 'c'
-        req = self.req_factory.trace('/', data={'comment': t1_c1_comment})
+        req = self.req_factory.trace('/', data={'key': t1.key, 'comment': t1_c1_comment})
         req.user = self.user_shimon
-        resp = CreateCommentView.as_view()(req, key=t1.key)
+        resp = CreateCommentView.as_view()(req)
         self.assertEqual(resp.status_code, 405)
 
 

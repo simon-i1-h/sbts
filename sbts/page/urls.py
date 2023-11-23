@@ -14,6 +14,6 @@ urlpatterns = [
     path('logout/', LogoutPageView.as_view(), name='logout'),
     path('api/page/files/', CreateFileView.as_view(), name='create_file'),
     path('api/page/tickets/', CreateTicketView.as_view(), name='create_ticket'),
-    path('api/page/comments/<uuid:key>/', CreateCommentView.as_view(), name='create_comment'),
+    path('api/page/comments/', CreateCommentView.as_view(), name='create_comment'),
     path('api/file/', include('sbts.file.urls')),
 ]
