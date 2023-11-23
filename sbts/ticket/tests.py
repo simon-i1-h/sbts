@@ -108,3 +108,41 @@ class TicketSortedCommentsTest(TestCase):
         c3 = t1.comment_set.create(comment='c', created_at=c3_dt)
 
         self.assertQuerySetEqual(t1.sorted_comments(), [c2, c3, c1])
+
+
+class TicketLastmodTest(TestCase):
+    def test_no_comment(self):
+        '''
+        コメントがないなら、チケットの作成日を返す
+        '''
+
+        t1_dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
+        t1 = Ticket.objects.create(title='ticket', created_at=t1_dt)
+
+        self.assertEqual(t1.lastmod, t1_dt)
+
+    def test_comment_1(self):
+        '''
+        コメントがあるなら、一番新しいコメントの作成日を返す
+        '''
+
+        t1_dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
+        t1 = Ticket.objects.create(title='ticket', created_at=t1_dt)
+        c1_dt = datetime.datetime.fromisoformat('2023-10-24T09:00:00Z')
+        t1.comment_set.create(comment='a', created_at=c1_dt)
+
+        self.assertEqual(t1.lastmod, c1_dt)
+
+    def test_comment_2(self):
+        '''
+        コメントがあるなら、一番新しいコメントの作成日を返す
+        '''
+
+        t1_dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
+        t1 = Ticket.objects.create(title='ticket', created_at=t1_dt)
+        c1_dt = datetime.datetime.fromisoformat('2023-10-28T09:00:00Z')
+        t1.comment_set.create(comment='a', created_at=c1_dt)
+        c2_dt = datetime.datetime.fromisoformat('2023-10-24T10:00:00Z')
+        t1.comment_set.create(comment='b', created_at=c2_dt)
+
+        self.assertEqual(t1.lastmod, c1_dt)
