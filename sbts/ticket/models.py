@@ -2,9 +2,11 @@ from django.db import models
 
 import uuid
 
+from sbts.core.models import CleanOpeManagerMixin, CleanOpeModelMixin
 
-class Ticket(models.Model):
-    class Manager(models.Manager):
+
+class Ticket(models.Model, CleanOpeModelMixin):
+    class Manager(models.Manager, CleanOpeManagerMixin):
         def sorted_tickets(self):
             return self.order_by('-created_at')
 
@@ -28,7 +30,15 @@ class Ticket(models.Model):
         return self.created_at
 
 
-class Comment(models.Model):
+class Comment(models.Model, CleanOpeModelMixin):
+    class Manager(models.Manager, CleanOpeManagerMixin):
+        pass
+
+    class Meta:
+        default_manager_name = 'objects'
+
+    objects = Manager()
+
     key = models.UUIDField(primary_key=True, default=uuid.uuid4)
     username = models.CharField(max_length=150)
     comment = models.CharField(max_length=65535)

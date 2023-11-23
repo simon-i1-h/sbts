@@ -79,9 +79,9 @@ class TicketPageView(BaseTicketPageView):
 class TicketView(LoginRequiredView):
     def post(self, request, *args, **kwargs):
         now = timezone.now()
-        Ticket.objects.create(key=uuid.uuid4(),
-                              title=request.POST['title'],
-                              created_at=now)
+        Ticket.objects.create_cleanly(key=uuid.uuid4(),
+                                      title=request.POST['title'],
+                                      created_at=now)
 
         return HttpResponseRedirect(reverse('page:ticket_page'))
 
@@ -102,9 +102,10 @@ class CommentView(LoginRequiredView):
     def post(self, request, *args, **kwargs):
         now = timezone.now()
         t = Ticket.objects.get(key=request.POST['key'])
-        t.comment_set.create(key=uuid.uuid4(),
-                             comment=request.POST['comment'],
-                             created_at=now)
+        t.comment_set.create_cleanly(key=uuid.uuid4(),
+                                     comment=request.POST['comment'],
+                                     created_at=now,
+                                     username=request.user.username)
 
         url = reverse('page:ticket_detail_page', kwargs={
             'key': request.POST['key'],

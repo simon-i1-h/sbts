@@ -19,7 +19,7 @@ class TicketSortedTicketsTest(TestCase):
         '''
 
         t1_dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
-        t1 = Ticket.objects.create(title='ticket', created_at=t1_dt)
+        t1 = Ticket.objects.create_cleanly(title='ticket', created_at=t1_dt)
 
         tickets = Ticket.objects.sorted_tickets()
         self.assertQuerySetEqual(tickets, [t1])
@@ -30,9 +30,9 @@ class TicketSortedTicketsTest(TestCase):
         '''
 
         t1_dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
-        t1 = Ticket.objects.create(title='ticket 1', created_at=t1_dt)
+        t1 = Ticket.objects.create_cleanly(title='ticket 1', created_at=t1_dt)
         t2_dt = datetime.datetime.fromisoformat('2023-10-24T23:00:00Z')
-        t2 = Ticket.objects.create(title='ticket 2', created_at=t2_dt)
+        t2 = Ticket.objects.create_cleanly(title='ticket 2', created_at=t2_dt)
 
         tickets = Ticket.objects.sorted_tickets()
         self.assertQuerySetEqual(tickets, [t2, t1])
@@ -43,11 +43,11 @@ class TicketSortedTicketsTest(TestCase):
         '''
 
         t1_dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
-        t1 = Ticket.objects.create(title='ticket 1', created_at=t1_dt)
+        t1 = Ticket.objects.create_cleanly(title='ticket 1', created_at=t1_dt)
         t2_dt = datetime.datetime.fromisoformat('2023-10-24T23:00:00Z')
-        t2 = Ticket.objects.create(title='ticket 2', created_at=t2_dt)
+        t2 = Ticket.objects.create_cleanly(title='ticket 2', created_at=t2_dt)
         t3_dt = datetime.datetime.fromisoformat('2023-10-22T23:50:00Z')
-        t3 = Ticket.objects.create(title='ticket 3', created_at=t3_dt)
+        t3 = Ticket.objects.create_cleanly(title='ticket 3', created_at=t3_dt)
 
         tickets = Ticket.objects.sorted_tickets()
         self.assertQuerySetEqual(tickets, [t2, t1, t3])
@@ -60,7 +60,7 @@ class TicketSortedCommentsTest(TestCase):
         '''
 
         t1_dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
-        t1 = Ticket.objects.create(title='ticket', created_at=t1_dt)
+        t1 = Ticket.objects.create_cleanly(title='ticket', created_at=t1_dt)
 
         self.assertQuerySetEqual(t1.sorted_comments(), [])
 
@@ -70,10 +70,10 @@ class TicketSortedCommentsTest(TestCase):
         '''
 
         t1_dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
-        t1 = Ticket.objects.create(title='ticket', created_at=t1_dt)
+        t1 = Ticket.objects.create_cleanly(title='ticket', created_at=t1_dt)
 
         t1_c1_dt = datetime.datetime.fromisoformat('2023-10-24T09:00:00Z')
-        t1_c1 = t1.comment_set.create(comment='a', created_at=t1_c1_dt)
+        t1_c1 = t1.comment_set.create_cleanly(comment='a', created_at=t1_c1_dt, username='shimon')
 
         self.assertQuerySetEqual(t1.sorted_comments(), [t1_c1])
 
@@ -83,12 +83,12 @@ class TicketSortedCommentsTest(TestCase):
         '''
 
         t1_dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
-        t1 = Ticket.objects.create(title='ticket', created_at=t1_dt)
+        t1 = Ticket.objects.create_cleanly(title='ticket', created_at=t1_dt)
 
         t1_c1_dt = datetime.datetime.fromisoformat('2023-10-24T09:00:00Z')
-        t1_c1 = t1.comment_set.create(comment='a', created_at=t1_c1_dt)
+        t1_c1 = t1.comment_set.create_cleanly(comment='a', created_at=t1_c1_dt, username='shimon')
         t1_c2_dt = datetime.datetime.fromisoformat('2023-10-24T08:00:00Z')
-        t1_c2 = t1.comment_set.create(comment='b', created_at=t1_c2_dt)
+        t1_c2 = t1.comment_set.create_cleanly(comment='b', created_at=t1_c2_dt, username='shimon')
 
         self.assertQuerySetEqual(t1.sorted_comments(), [t1_c2, t1_c1])
 
@@ -98,14 +98,14 @@ class TicketSortedCommentsTest(TestCase):
         '''
 
         t1_dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
-        t1 = Ticket.objects.create(title='ticket', created_at=t1_dt)
+        t1 = Ticket.objects.create_cleanly(title='ticket', created_at=t1_dt)
 
         t1_c1_dt = datetime.datetime.fromisoformat('2023-10-24T09:00:00Z')
-        t1_c1 = t1.comment_set.create(comment='a', created_at=t1_c1_dt)
+        t1_c1 = t1.comment_set.create_cleanly(comment='a', created_at=t1_c1_dt, username='shimon')
         t1_c2_dt = datetime.datetime.fromisoformat('2023-10-24T08:00:00Z')
-        t1_c2 = t1.comment_set.create(comment='b', created_at=t1_c2_dt)
+        t1_c2 = t1.comment_set.create_cleanly(comment='b', created_at=t1_c2_dt, username='shimon')
         t1_c3_dt = datetime.datetime.fromisoformat('2023-10-24T08:30:00Z')
-        t1_c3 = t1.comment_set.create(comment='c', created_at=t1_c3_dt)
+        t1_c3 = t1.comment_set.create_cleanly(comment='c', created_at=t1_c3_dt, username='shimon')
 
         self.assertQuerySetEqual(t1.sorted_comments(), [t1_c2, t1_c3, t1_c1])
 
@@ -117,7 +117,7 @@ class TicketLastmodTest(TestCase):
         '''
 
         t1_dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
-        t1 = Ticket.objects.create(title='ticket', created_at=t1_dt)
+        t1 = Ticket.objects.create_cleanly(title='ticket', created_at=t1_dt)
 
         self.assertEqual(t1.lastmod, t1_dt)
 
@@ -127,9 +127,9 @@ class TicketLastmodTest(TestCase):
         '''
 
         t1_dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
-        t1 = Ticket.objects.create(title='ticket', created_at=t1_dt)
+        t1 = Ticket.objects.create_cleanly(title='ticket', created_at=t1_dt)
         t1_c1_dt = datetime.datetime.fromisoformat('2023-10-24T09:00:00Z')
-        t1.comment_set.create(comment='a', created_at=t1_c1_dt)
+        t1.comment_set.create_cleanly(comment='a', created_at=t1_c1_dt, username='shimon')
 
         self.assertEqual(t1.lastmod, t1_c1_dt)
 
@@ -139,10 +139,10 @@ class TicketLastmodTest(TestCase):
         '''
 
         t1_dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
-        t1 = Ticket.objects.create(title='ticket', created_at=t1_dt)
+        t1 = Ticket.objects.create_cleanly(title='ticket', created_at=t1_dt)
         t1_c1_dt = datetime.datetime.fromisoformat('2023-10-28T09:00:00Z')
-        t1.comment_set.create(comment='a', created_at=t1_c1_dt)
+        t1.comment_set.create_cleanly(comment='a', created_at=t1_c1_dt, username='shimon')
         t1_c2_dt = datetime.datetime.fromisoformat('2023-10-24T10:00:00Z')
-        t1.comment_set.create(comment='b', created_at=t1_c2_dt)
+        t1.comment_set.create_cleanly(comment='b', created_at=t1_c2_dt, username='shimon')
 
         self.assertEqual(t1.lastmod, t1_c1_dt)

@@ -3,9 +3,11 @@ from django.db import models, transaction
 import uuid
 import boto3
 
+from sbts.core.models import CleanOpeManagerMixin, CleanOpeModelMixin
 
-class UploadedFile(models.Model):
-    class Manager(models.Manager):
+
+class UploadedFile(models.Model, CleanOpeModelMixin):
+    class Manager(models.Manager, CleanOpeManagerMixin):
         def create_from_s3(self, key, username, filename, last_modified, **kwargs):
             with transaction.atomic():
                 uploader = S3Uploader.objects.get(
@@ -15,7 +17,7 @@ class UploadedFile(models.Model):
                     # 他のユーザーのブロブは参照できない
                     username=username)
                 # S3のオブジェクトの所有者をS3UploaderからUploadedFileに移動
-                file = self.create(
+                file = self.create_cleanly(
                     key=key,
                     name=filename,
                     last_modified=last_modified,
@@ -39,7 +41,15 @@ class UploadedFile(models.Model):
 
 
 # 内部用
-class S3Uploader(models.Model):
+class S3Uploader(models.Model, CleanOpeModelMixin):
+    class Manager(models.Manager, CleanOpeManagerMixin):
+        pass
+
+    class Meta:
+        default_manager_name = 'objects'
+
+    objects = Manager()
+
     COMPLETED = 0
     UPLOADING = 1
     STATUS_CHOICES = [
@@ -49,7 +59,7 @@ class S3Uploader(models.Model):
 
     key = models.UUIDField(primary_key=True, default=uuid.uuid4)
     status = models.IntegerField(choices=STATUS_CHOICES)
-    size = models.BigIntegerField(null=True)
+    size = models.BigIntegerField(null=True, blank=True, default=None)
     username = models.CharField(max_length=150)
 
     @classmethod
@@ -58,7 +68,7 @@ class S3Uploader(models.Model):
         size = 0
 
         with transaction.atomic(durable=True):
-            cls.objects.create(
+            cls.objects.create_cleanly(
                 key=key,
                 status=cls.UPLOADING,
                 username=username)
@@ -111,7 +121,7 @@ class S3Uploader(models.Model):
             uploader = cls.objects.get(key=key, status=cls.UPLOADING)
             uploader.status = cls.COMPLETED
             uploader.size = size
-            uploader.save()
+            uploader.save_cleanly()
 
         return key
 

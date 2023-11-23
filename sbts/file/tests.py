@@ -6,7 +6,7 @@ import string
 import uuid
 from email.message import EmailMessage
 
-from django.db import transaction, DataError
+from django.db import transaction
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
@@ -126,17 +126,11 @@ class UploadFileTest(ObjectStorageTestCase):
         username = ''
         content = b'hello.'
         blob = io.BytesIO(content)
-        key = upload_blob(blob, username)
 
-        s3client = boto3.client('s3', endpoint_url=settings.S3_ENDPOINT)
-        s3obj = s3client.get_object(Bucket=settings.S3_BUCKET_FILE, Key=str(key))
+        with self.assertRaises(ValidationError):
+            upload_blob(blob, username)
 
-        self.assertEqual(s3obj['Body'].read(), content)
-        o1 = S3Uploader.objects.get(key=key)
-        self.assertQuerySetEqual(S3Uploader.objects.all(), [o1])
-        self.assertEqual(o1.status, S3Uploader.COMPLETED)
-        self.assertEqual(o1.username, username)
-        self.assertEqual(o1.size, len(content))
+        self.assertQuerySetEqual(S3Uploader.objects.all(), [])
 
     def test_nested_atomic(self):
         '''
@@ -167,7 +161,7 @@ class UploadedFileCreateFromS3Test(TestCase):
             'shimon', 'shimon@example.com', 'pw')
         # 実際にアップロードしようとすると、タイミングの問題でS3にアクセスできない。
         # S3にアクセスする必要はないので、テストではupload_blobを使わず、単にオブジェクトを作成しておく。
-        cls.s3uploader = S3Uploader.objects.create(
+        cls.s3uploader = S3Uploader.objects.create_cleanly(
             status=S3Uploader.COMPLETED, username=cls.user_shimon.username, size=6)
 
     def test_ok(self):
@@ -225,7 +219,7 @@ class UploadedFileCreateFromS3Test(TestCase):
         filename = ''.join(random.Random(3).choices(string.ascii_lowercase, k=256))
         lastmod = datetime.datetime.fromisoformat('2023-11-04T12:00:00Z')
 
-        with self.assertRaises(DataError):
+        with self.assertRaises(ValidationError):
             UploadedFile.objects.create_from_s3(
                 self.s3uploader.key, self.user_shimon.username, filename, lastmod)
 

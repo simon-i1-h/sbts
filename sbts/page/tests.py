@@ -3,7 +3,6 @@ import random
 import string
 import uuid
 
-from django.db import DataError, transaction
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist, \
@@ -159,7 +158,7 @@ class TicketPageViewTest(TestCase):
 
     def test_one(self):
         t1_dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
-        t1 = Ticket.objects.create(title='a', created_at=t1_dt)
+        t1 = Ticket.objects.create_cleanly(title='a', created_at=t1_dt)
 
         req = self.req_factory.get('/')
         req.user = AnonymousUser()
@@ -173,9 +172,9 @@ class TicketPageViewTest(TestCase):
         '''
 
         t1_dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
-        t1 = Ticket.objects.create(title='b', created_at=t1_dt)
+        t1 = Ticket.objects.create_cleanly(title='b', created_at=t1_dt)
         t2_dt = datetime.datetime.fromisoformat('2023-10-24T11:00:00Z')
-        t2 = Ticket.objects.create(title='a', created_at=t2_dt)
+        t2 = Ticket.objects.create_cleanly(title='a', created_at=t2_dt)
 
         req = self.req_factory.get('/')
         req.user = AnonymousUser()
@@ -189,11 +188,11 @@ class TicketPageViewTest(TestCase):
         '''
 
         t1_dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
-        t1 = Ticket.objects.create(title='c', created_at=t1_dt)
+        t1 = Ticket.objects.create_cleanly(title='c', created_at=t1_dt)
         t2_dt = datetime.datetime.fromisoformat('2023-10-24T11:00:00Z')
-        t2 = Ticket.objects.create(title='b', created_at=t2_dt)
+        t2 = Ticket.objects.create_cleanly(title='b', created_at=t2_dt)
         t3_dt = datetime.datetime.fromisoformat('2023-10-24T03:15:00Z')
-        t3 = Ticket.objects.create(title='a', created_at=t3_dt)
+        t3 = Ticket.objects.create_cleanly(title='a', created_at=t3_dt)
 
         req = self.req_factory.get('/')
         req.user = AnonymousUser()
@@ -211,20 +210,20 @@ class TicketPageViewTest(TestCase):
         '''
 
         t1_dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
-        t1 = Ticket.objects.create(title='c', created_at=t1_dt)
+        t1 = Ticket.objects.create_cleanly(title='c', created_at=t1_dt)
         t1_c1_dt = datetime.datetime.fromisoformat('2023-10-23T23:20:15Z')
-        t1.comment_set.create(comment='a', created_at=t1_c1_dt)
+        t1.comment_set.create_cleanly(comment='a', created_at=t1_c1_dt, username='shimon')
 
         t2_dt = datetime.datetime.fromisoformat('2023-10-24T11:00:00Z')
-        t2 = Ticket.objects.create(title='b', created_at=t2_dt)
+        t2 = Ticket.objects.create_cleanly(title='b', created_at=t2_dt)
         # 何故かチケット作成日よりコメント日の方が早いが、許容する
         t2_c1_dt = datetime.datetime.fromisoformat('2023-10-22T11:00:30Z')
-        t2.comment_set.create(comment='b', created_at=t2_c1_dt)
+        t2.comment_set.create_cleanly(comment='b', created_at=t2_c1_dt, username='shimon')
 
         t3_dt = datetime.datetime.fromisoformat('2023-10-24T03:15:00Z')
-        t3 = Ticket.objects.create(title='a', created_at=t3_dt)
+        t3 = Ticket.objects.create_cleanly(title='a', created_at=t3_dt)
         t3_c1_dt = datetime.datetime.fromisoformat('2023-10-24T23:00:30Z')
-        t3.comment_set.create(comment='c', created_at=t3_c1_dt)
+        t3.comment_set.create_cleanly(comment='c', created_at=t3_c1_dt, username='shimon')
 
         req = self.req_factory.get('/')
         req.user = AnonymousUser()
@@ -245,26 +244,26 @@ class TicketPageViewTest(TestCase):
         '''
 
         t1_dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
-        t1 = Ticket.objects.create(title='c', created_at=t1_dt)
+        t1 = Ticket.objects.create_cleanly(title='c', created_at=t1_dt)
         t1_c1_dt = datetime.datetime.fromisoformat('2023-10-23T23:20:30Z')
-        t1.comment_set.create(comment='a', created_at=t1_c1_dt)
+        t1.comment_set.create_cleanly(comment='a', created_at=t1_c1_dt, username='shimon')
         t1_c2_dt = datetime.datetime.fromisoformat('2023-10-23T23:20:15Z')
-        t1.comment_set.create(comment='b', created_at=t1_c2_dt)
+        t1.comment_set.create_cleanly(comment='b', created_at=t1_c2_dt, username='shimon')
 
         t2_dt = datetime.datetime.fromisoformat('2023-10-24T11:00:00Z')
-        t2 = Ticket.objects.create(title='b', created_at=t2_dt)
+        t2 = Ticket.objects.create_cleanly(title='b', created_at=t2_dt)
         # 何故かチケット作成日よりコメント日の方が早いが、許容する
         t2_c1_dt = datetime.datetime.fromisoformat('2023-10-22T11:00:15Z')
-        t2.comment_set.create(comment='c', created_at=t2_c1_dt)
+        t2.comment_set.create_cleanly(comment='c', created_at=t2_c1_dt, username='shimon')
         t2_c2_dt = datetime.datetime.fromisoformat('2023-10-22T11:00:30Z')
-        t2.comment_set.create(comment='d', created_at=t2_c2_dt)
+        t2.comment_set.create_cleanly(comment='d', created_at=t2_c2_dt, username='shimon')
 
         t3_dt = datetime.datetime.fromisoformat('2023-10-24T03:15:00Z')
-        t3 = Ticket.objects.create(title='a', created_at=t3_dt)
+        t3 = Ticket.objects.create_cleanly(title='a', created_at=t3_dt)
         t3_c1_dt = datetime.datetime.fromisoformat('2023-10-24T23:05:00Z')
-        t3.comment_set.create(comment='e', created_at=t3_c1_dt)
+        t3.comment_set.create_cleanly(comment='e', created_at=t3_c1_dt, username='shimon')
         t3_c2_dt = datetime.datetime.fromisoformat('2023-10-24T23:00:00Z')
-        t3.comment_set.create(comment='f', created_at=t3_c2_dt)
+        t3.comment_set.create_cleanly(comment='f', created_at=t3_c2_dt, username='shimon')
 
         req = self.req_factory.get('/')
         req.user = AnonymousUser()
@@ -285,32 +284,32 @@ class TicketPageViewTest(TestCase):
         '''
 
         t1_dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
-        t1 = Ticket.objects.create(title='c', created_at=t1_dt)
+        t1 = Ticket.objects.create_cleanly(title='c', created_at=t1_dt)
         t1_c1_dt = datetime.datetime.fromisoformat('2023-10-23T23:20:30Z')
-        t1.comment_set.create(comment='a', created_at=t1_c1_dt)
+        t1.comment_set.create_cleanly(comment='a', created_at=t1_c1_dt, username='shimon')
         t1_c2_dt = datetime.datetime.fromisoformat('2023-10-23T23:20:15Z')
-        t1.comment_set.create(comment='b', created_at=t1_c2_dt)
+        t1.comment_set.create_cleanly(comment='b', created_at=t1_c2_dt, username='shimon')
         t1_c3_dt = datetime.datetime.fromisoformat('2023-10-23T23:20:40Z')
-        t1.comment_set.create(comment='c', created_at=t1_c3_dt)
+        t1.comment_set.create_cleanly(comment='c', created_at=t1_c3_dt, username='shimon')
 
         t2_dt = datetime.datetime.fromisoformat('2023-10-24T11:00:00Z')
-        t2 = Ticket.objects.create(title='b', created_at=t2_dt)
+        t2 = Ticket.objects.create_cleanly(title='b', created_at=t2_dt)
         # 何故かチケット作成日よりコメント日の方が早いが、許容する
         t2_c1_dt = datetime.datetime.fromisoformat('2023-10-22T11:01:00Z')
-        t2.comment_set.create(comment='d', created_at=t2_c1_dt)
+        t2.comment_set.create_cleanly(comment='d', created_at=t2_c1_dt, username='shimon')
         t2_c2_dt = datetime.datetime.fromisoformat('2023-10-22T11:00:30Z')
-        t2.comment_set.create(comment='e', created_at=t2_c2_dt)
+        t2.comment_set.create_cleanly(comment='e', created_at=t2_c2_dt, username='shimon')
         t2_c3_dt = datetime.datetime.fromisoformat('2023-10-22T11:00:00Z')
-        t2.comment_set.create(comment='f', created_at=t2_c3_dt)
+        t2.comment_set.create_cleanly(comment='f', created_at=t2_c3_dt, username='shimon')
 
         t3_dt = datetime.datetime.fromisoformat('2023-10-24T03:15:00Z')
-        t3 = Ticket.objects.create(title='a', created_at=t3_dt)
+        t3 = Ticket.objects.create_cleanly(title='a', created_at=t3_dt)
         t3_c1_dt = datetime.datetime.fromisoformat('2023-10-24T23:00:00Z')
-        t3.comment_set.create(comment='g', created_at=t3_c1_dt)
+        t3.comment_set.create_cleanly(comment='g', created_at=t3_c1_dt, username='shimon')
         t3_c2_dt = datetime.datetime.fromisoformat('2023-10-25T01:00:00Z')
-        t3.comment_set.create(comment='h', created_at=t3_c2_dt)
+        t3.comment_set.create_cleanly(comment='h', created_at=t3_c2_dt, username='shimon')
         t3_c3_dt = datetime.datetime.fromisoformat('2023-10-24T23:00:10Z')
-        t3.comment_set.create(comment='i', created_at=t3_c3_dt)
+        t3.comment_set.create_cleanly(comment='i', created_at=t3_c3_dt, username='shimon')
 
         req = self.req_factory.get('/')
         req.user = AnonymousUser()
@@ -331,19 +330,19 @@ class TicketPageViewTest(TestCase):
         '''
 
         t1_dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
-        t1 = Ticket.objects.create(title='c', created_at=t1_dt)
+        t1 = Ticket.objects.create_cleanly(title='c', created_at=t1_dt)
         t1_c1_dt = datetime.datetime.fromisoformat('2023-10-23T23:20:15Z')
-        t1.comment_set.create(comment='a', created_at=t1_c1_dt)
+        t1.comment_set.create_cleanly(comment='a', created_at=t1_c1_dt, username='shimon')
 
         t2_dt = datetime.datetime.fromisoformat('2023-10-24T11:00:00Z')
-        t2 = Ticket.objects.create(title='b', created_at=t2_dt)
+        t2 = Ticket.objects.create_cleanly(title='b', created_at=t2_dt)
 
         t3_dt = datetime.datetime.fromisoformat('2023-10-24T03:15:00Z')
-        t3 = Ticket.objects.create(title='a', created_at=t3_dt)
+        t3 = Ticket.objects.create_cleanly(title='a', created_at=t3_dt)
         t3_c1_dt = datetime.datetime.fromisoformat('2023-10-24T23:00:30Z')
-        t3.comment_set.create(comment='d', created_at=t3_c1_dt)
+        t3.comment_set.create_cleanly(comment='d', created_at=t3_c1_dt, username='shimon')
         t3_c2_dt = datetime.datetime.fromisoformat('2023-10-25T05:00:30Z')
-        t3.comment_set.create(comment='c', created_at=t3_c2_dt)
+        t3.comment_set.create_cleanly(comment='c', created_at=t3_c2_dt, username='shimon')
 
         req = self.req_factory.get('/')
         req.user = AnonymousUser()
@@ -485,7 +484,7 @@ class TicketViewTest(TestCase):
 
     def test_empty_title(self):
         '''
-        タイトルが空文字列の場合は成功
+        タイトルが空文字列の場合は例外を送出
         '''
 
         self.assertQuerySetEqual(Ticket.objects.all(), [])
@@ -493,10 +492,10 @@ class TicketViewTest(TestCase):
         t1_title = ''
         req = self.req_factory.post('/', data={'title': t1_title})
         req.user = self.user_shimon
-        resp = TicketView.as_view()(req)
-        self.assertEqual(resp.status_code, 302)
-        self.assertEqual(resp['Location'], reverse('page:ticket_page'))
-        self.assertQuerySetEqual(Ticket.objects.all(), [Ticket.objects.get(title=t1_title)])
+
+        with self.assertRaises(ValidationError):
+            TicketView.as_view()(req)
+        self.assertQuerySetEqual(Ticket.objects.all(), [])
 
     def test_too_long_title(self):
         '''
@@ -509,13 +508,8 @@ class TicketViewTest(TestCase):
         req = self.req_factory.post('/', data={'title': t1_title})
         req.user = self.user_shimon
 
-        # データベースへのデータの挿入の失敗でトランザクションが壊れ、
-        # その後クエリが失敗するようになるため、アトミックブロックを追
-        # 加している。
-        with transaction.atomic():
-            with self.assertRaises(DataError):
-                TicketView.as_view()(req)
-
+        with self.assertRaises(ValidationError):
+            TicketView.as_view()(req)
         self.assertQuerySetEqual(Ticket.objects.all(), [])
 
     def test_no_title(self):
@@ -627,7 +621,7 @@ class TicketDetailPageViewTest(TestCase):
 
     def test_empty(self):
         dt1 = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
-        t1 = Ticket.objects.create(title='ticket 1', created_at=dt1)
+        t1 = Ticket.objects.create_cleanly(title='ticket 1', created_at=dt1)
 
         req = self.req_factory.get('/')
         req.user = AnonymousUser()
@@ -637,10 +631,10 @@ class TicketDetailPageViewTest(TestCase):
 
     def test_one(self):
         t1_dt = datetime.datetime.fromisoformat('2023-10-22T00:00:00Z')
-        t1 = Ticket.objects.create(title='ticket 1', created_at=t1_dt)
+        t1 = Ticket.objects.create_cleanly(title='ticket 1', created_at=t1_dt)
 
         t1_c1_dt = datetime.datetime.fromisoformat('2023-10-26T15:00:00Z')
-        t1_c1 = t1.comment_set.create(comment='a', created_at=t1_c1_dt)
+        t1_c1 = t1.comment_set.create_cleanly(comment='a', created_at=t1_c1_dt, username='shimon')
 
         req = self.req_factory.get('/')
         req.user = AnonymousUser()
@@ -655,12 +649,12 @@ class TicketDetailPageViewTest(TestCase):
         '''
 
         t1_dt = datetime.datetime.fromisoformat('2023-10-22T00:00:00Z')
-        t1 = Ticket.objects.create(title='ticket 1', created_at=t1_dt)
+        t1 = Ticket.objects.create_cleanly(title='ticket 1', created_at=t1_dt)
 
         t1_c1_dt = datetime.datetime.fromisoformat('2023-10-26T20:00:00Z')
-        t1_c1 = t1.comment_set.create(comment='a', created_at=t1_c1_dt)
+        t1_c1 = t1.comment_set.create_cleanly(comment='a', created_at=t1_c1_dt, username='shimon')
         t1_c2_dt = datetime.datetime.fromisoformat('2023-10-26T15:00:00Z')
-        t1_c2 = t1.comment_set.create(comment='b', created_at=t1_c2_dt)
+        t1_c2 = t1.comment_set.create_cleanly(comment='b', created_at=t1_c2_dt, username='shimon')
 
         req = self.req_factory.get('/')
         req.user = AnonymousUser()
@@ -675,14 +669,14 @@ class TicketDetailPageViewTest(TestCase):
         '''
 
         t1_dt = datetime.datetime.fromisoformat('2023-10-22T00:00:00Z')
-        t1 = Ticket.objects.create(title='ticket 1', created_at=t1_dt)
+        t1 = Ticket.objects.create_cleanly(title='ticket 1', created_at=t1_dt)
 
         t1_c1_dt = datetime.datetime.fromisoformat('2023-10-26T20:00:00Z')
-        t1_c1 = t1.comment_set.create(comment='a', created_at=t1_c1_dt)
+        t1_c1 = t1.comment_set.create_cleanly(comment='a', created_at=t1_c1_dt, username='shimon')
         t1_c2_dt = datetime.datetime.fromisoformat('2023-10-26T09:00:00Z')
-        t1_c2 = t1.comment_set.create(comment='b', created_at=t1_c2_dt)
+        t1_c2 = t1.comment_set.create_cleanly(comment='b', created_at=t1_c2_dt, username='shimon')
         t1_c3_dt = datetime.datetime.fromisoformat('2023-10-26T15:00:00Z')
-        t1_c3 = t1.comment_set.create(comment='c', created_at=t1_c3_dt)
+        t1_c3 = t1.comment_set.create_cleanly(comment='c', created_at=t1_c3_dt, username='shimon')
 
         req = self.req_factory.get('/')
         req.user = AnonymousUser()
@@ -699,7 +693,7 @@ class TicketDetailPageViewTest(TestCase):
         req = self.req_factory.options('/')
         req.user = AnonymousUser()
         t1_dt = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
-        t1 = Ticket.objects.create(title='ticket 1', created_at=t1_dt)
+        t1 = Ticket.objects.create_cleanly(title='ticket 1', created_at=t1_dt)
         resp = TicketDetailPageView.as_view()(req, key=t1.key)
         self.assertEqual(resp.status_code, 200)
 
@@ -711,7 +705,7 @@ class TicketDetailPageViewTest(TestCase):
         req = self.req_factory.head('/')
         req.user = AnonymousUser()
         t1_dt = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
-        t1 = Ticket.objects.create(title='ticket 1', created_at=t1_dt)
+        t1 = Ticket.objects.create_cleanly(title='ticket 1', created_at=t1_dt)
         resp = TicketDetailPageView.as_view()(req, key=t1.key)
         self.assertEqual(resp.status_code, 200)
 
@@ -723,7 +717,7 @@ class TicketDetailPageViewTest(TestCase):
         req = self.req_factory.post('/')
         req.user = AnonymousUser()
         t1_dt = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
-        t1 = Ticket.objects.create(title='ticket 1', created_at=t1_dt)
+        t1 = Ticket.objects.create_cleanly(title='ticket 1', created_at=t1_dt)
         resp = TicketDetailPageView.as_view()(req, key=t1.key)
         self.assertEqual(resp.status_code, 405)
 
@@ -735,7 +729,7 @@ class TicketDetailPageViewTest(TestCase):
         req = self.req_factory.put('/')
         req.user = AnonymousUser()
         t1_dt = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
-        t1 = Ticket.objects.create(title='ticket 1', created_at=t1_dt)
+        t1 = Ticket.objects.create_cleanly(title='ticket 1', created_at=t1_dt)
         resp = TicketDetailPageView.as_view()(req, key=t1.key)
         self.assertEqual(resp.status_code, 405)
 
@@ -747,7 +741,7 @@ class TicketDetailPageViewTest(TestCase):
         req = self.req_factory.patch('/')
         req.user = AnonymousUser()
         t1_dt = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
-        t1 = Ticket.objects.create(title='ticket 1', created_at=t1_dt)
+        t1 = Ticket.objects.create_cleanly(title='ticket 1', created_at=t1_dt)
         resp = TicketDetailPageView.as_view()(req, key=t1.key)
         self.assertEqual(resp.status_code, 405)
 
@@ -759,7 +753,7 @@ class TicketDetailPageViewTest(TestCase):
         req = self.req_factory.delete('/')
         req.user = AnonymousUser()
         t1_dt = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
-        t1 = Ticket.objects.create(title='ticket 1', created_at=t1_dt)
+        t1 = Ticket.objects.create_cleanly(title='ticket 1', created_at=t1_dt)
         resp = TicketDetailPageView.as_view()(req, key=t1.key)
         self.assertEqual(resp.status_code, 405)
 
@@ -771,7 +765,7 @@ class TicketDetailPageViewTest(TestCase):
         req = self.req_factory.trace('/')
         req.user = AnonymousUser()
         t1_dt = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
-        t1 = Ticket.objects.create(title='ticket 1', created_at=t1_dt)
+        t1 = Ticket.objects.create_cleanly(title='ticket 1', created_at=t1_dt)
         resp = TicketDetailPageView.as_view()(req, key=t1.key)
         self.assertEqual(resp.status_code, 405)
 
@@ -798,7 +792,7 @@ class CommentViewTest(TestCase):
         '''
 
         t1_dt = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
-        t1 = Ticket.objects.create(title='ticket 1', created_at=t1_dt)
+        t1 = Ticket.objects.create_cleanly(title='ticket 1', created_at=t1_dt)
 
         req = self.req_factory.post('/', data={'key': t1.key, 'comment': 'c'})
         req.user = AnonymousUser()
@@ -809,7 +803,7 @@ class CommentViewTest(TestCase):
 
     def test_ok(self):
         t1_dt = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
-        t1 = Ticket.objects.create(title='ticket 1', created_at=t1_dt)
+        t1 = Ticket.objects.create_cleanly(title='ticket 1', created_at=t1_dt)
 
         self.assertQuerySetEqual(t1.comment_set.all(), [])
 
@@ -828,7 +822,7 @@ class CommentViewTest(TestCase):
         '''
 
         t1_dt = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
-        t1 = Ticket.objects.create(title='ticket 1', created_at=t1_dt)
+        t1 = Ticket.objects.create_cleanly(title='ticket 1', created_at=t1_dt)
 
         self.assertQuerySetEqual(t1.comment_set.all(), [])
 
@@ -843,11 +837,11 @@ class CommentViewTest(TestCase):
 
     def test_empty_comment(self):
         '''
-        コメントが空文字列の場合は成功
+        コメントが空文字列の場合は例外を送出
         '''
 
         t1_dt = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
-        t1 = Ticket.objects.create(title='ticket 1', created_at=t1_dt)
+        t1 = Ticket.objects.create_cleanly(title='ticket 1', created_at=t1_dt)
 
         self.assertQuerySetEqual(t1.comment_set.all(), [])
 
@@ -855,10 +849,9 @@ class CommentViewTest(TestCase):
         req = self.req_factory.post('/', data={'key': t1.key, 'comment': t1_c1_comment})
         req.user = self.user_shimon
 
-        resp = CommentView.as_view()(req)
-        self.assertEqual(resp.status_code, 302)
-        self.assertEqual(resp['Location'], reverse('page:ticket_detail_page', kwargs={'key': t1.key}))
-        self.assertQuerySetEqual(t1.comment_set.all(), [t1.comment_set.get(comment=t1_c1_comment)])
+        with self.assertRaises(ValidationError):
+            CommentView.as_view()(req)
+        self.assertQuerySetEqual(Comment.objects.all(), [])
 
     def test_invalid_ticket(self):
         '''
@@ -882,7 +875,7 @@ class CommentViewTest(TestCase):
         '''
 
         t1_dt = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
-        t1 = Ticket.objects.create(title='ticket 1', created_at=t1_dt)
+        t1 = Ticket.objects.create_cleanly(title='ticket 1', created_at=t1_dt)
 
         self.assertQuerySetEqual(t1.comment_set.all(), [])
 
@@ -899,7 +892,7 @@ class CommentViewTest(TestCase):
         '''
 
         t1_dt = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
-        t1 = Ticket.objects.create(title='ticket 1', created_at=t1_dt)
+        t1 = Ticket.objects.create_cleanly(title='ticket 1', created_at=t1_dt)
 
         self.assertQuerySetEqual(t1.comment_set.all(), [])
 
@@ -907,13 +900,8 @@ class CommentViewTest(TestCase):
         req = self.req_factory.post('/', data={'key': t1.key, 'comment': t1_c1_comment})
         req.user = self.user_shimon
 
-        # データベースへのデータの挿入の失敗でトランザクションが壊れ、
-        # その後クエリが失敗するようになるため、アトミックブロックを追
-        # 加している。
-        with transaction.atomic():
-            with self.assertRaises(DataError):
-                CommentView.as_view()(req)
-
+        with self.assertRaises(ValidationError):
+            CommentView.as_view()(req)
         self.assertQuerySetEqual(t1.comment_set.all(), [])
 
     def test_invalid_ticket_and_too_long_comment(self):
@@ -939,7 +927,7 @@ class CommentViewTest(TestCase):
         '''
 
         t1_dt = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
-        t1 = Ticket.objects.create(title='ticket 1', created_at=t1_dt)
+        t1 = Ticket.objects.create_cleanly(title='ticket 1', created_at=t1_dt)
         t1_c1_comment = 'c'
         req = self.req_factory.options('/', data={'key': t1.key, 'comment': t1_c1_comment})
         req.user = self.user_shimon
@@ -952,7 +940,7 @@ class CommentViewTest(TestCase):
         '''
 
         t1_dt = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
-        t1 = Ticket.objects.create(title='ticket 1', created_at=t1_dt)
+        t1 = Ticket.objects.create_cleanly(title='ticket 1', created_at=t1_dt)
         t1_c1_comment = 'c'
         req = self.req_factory.head('/', data={'key': t1.key, 'comment': t1_c1_comment})
         req.user = self.user_shimon
@@ -965,7 +953,7 @@ class CommentViewTest(TestCase):
         '''
 
         t1_dt = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
-        t1 = Ticket.objects.create(title='ticket 1', created_at=t1_dt)
+        t1 = Ticket.objects.create_cleanly(title='ticket 1', created_at=t1_dt)
         t1_c1_comment = 'c'
         req = self.req_factory.get('/', data={'key': t1.key, 'comment': t1_c1_comment})
         req.user = self.user_shimon
@@ -978,7 +966,7 @@ class CommentViewTest(TestCase):
         '''
 
         t1_dt = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
-        t1 = Ticket.objects.create(title='ticket 1', created_at=t1_dt)
+        t1 = Ticket.objects.create_cleanly(title='ticket 1', created_at=t1_dt)
         t1_c1_comment = 'c'
         req = self.req_factory.put('/', data={'key': t1.key, 'comment': t1_c1_comment})
         req.user = self.user_shimon
@@ -991,7 +979,7 @@ class CommentViewTest(TestCase):
         '''
 
         t1_dt = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
-        t1 = Ticket.objects.create(title='ticket 1', created_at=t1_dt)
+        t1 = Ticket.objects.create_cleanly(title='ticket 1', created_at=t1_dt)
         t1_c1_comment = 'c'
         req = self.req_factory.patch('/', data={'key': t1.key, 'comment': t1_c1_comment})
         req.user = self.user_shimon
@@ -1004,7 +992,7 @@ class CommentViewTest(TestCase):
         '''
 
         t1_dt = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
-        t1 = Ticket.objects.create(title='ticket 1', created_at=t1_dt)
+        t1 = Ticket.objects.create_cleanly(title='ticket 1', created_at=t1_dt)
         t1_c1_comment = 'c'
         req = self.req_factory.delete('/', data={'key': t1.key, 'comment': t1_c1_comment})
         req.user = self.user_shimon
@@ -1017,7 +1005,7 @@ class CommentViewTest(TestCase):
         '''
 
         t1_dt = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
-        t1 = Ticket.objects.create(title='ticket 1', created_at=t1_dt)
+        t1 = Ticket.objects.create_cleanly(title='ticket 1', created_at=t1_dt)
         t1_c1_comment = 'c'
         req = self.req_factory.trace('/', data={'key': t1.key, 'comment': t1_c1_comment})
         req.user = self.user_shimon
@@ -1046,7 +1034,7 @@ class FilePageViewTest(TestCase):
     def test_one(self):
         un = 'shimon'
         f1_dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
-        f1 = UploadedFile.objects.create(name='f', last_modified=f1_dt, size='0', username=un)
+        f1 = UploadedFile.objects.create_cleanly(name='f', last_modified=f1_dt, size='0', username=un)
 
         req = self.req_factory.get('/')
         req.user = AnonymousUser()
@@ -1064,9 +1052,9 @@ class FilePageViewTest(TestCase):
 
         un = 'shimon'
         f1_dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
-        f1 = UploadedFile.objects.create(name='g', last_modified=f1_dt, size='0', username=un)
+        f1 = UploadedFile.objects.create_cleanly(name='g', last_modified=f1_dt, size='0', username=un)
         f2_dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
-        f2 = UploadedFile.objects.create(name='f', last_modified=f2_dt, size='0', username=un)
+        f2 = UploadedFile.objects.create_cleanly(name='f', last_modified=f2_dt, size='0', username=un)
 
         req = self.req_factory.get('/')
         req.user = AnonymousUser()
@@ -1084,11 +1072,11 @@ class FilePageViewTest(TestCase):
 
         un = 'shimon'
         f1_dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
-        f1 = UploadedFile.objects.create(name='g', last_modified=f1_dt, size='0', username=un)
+        f1 = UploadedFile.objects.create_cleanly(name='g', last_modified=f1_dt, size='0', username=un)
         f2_dt = datetime.datetime.fromisoformat('2023-10-10T23:50:00Z')
-        f2 = UploadedFile.objects.create(name='f', last_modified=f2_dt, size='0', username=un)
+        f2 = UploadedFile.objects.create_cleanly(name='f', last_modified=f2_dt, size='0', username=un)
         f3_dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
-        f3 = UploadedFile.objects.create(name='f', last_modified=f3_dt, size='0', username=un)
+        f3 = UploadedFile.objects.create_cleanly(name='f', last_modified=f3_dt, size='0', username=un)
 
         req = self.req_factory.get('/')
         req.user = AnonymousUser()
@@ -1107,28 +1095,28 @@ class FilePageViewTest(TestCase):
         un = 'shimon'
         f1_dt = datetime.datetime.fromisoformat('2023-10-15T23:50:00Z')
         f1_k = uuid.UUID('6b1ec55f-3e41-4780-aa71-0fbbbe4e0d5d')
-        f1 = UploadedFile.objects.create(key=f1_k, name='g', last_modified=f1_dt, size='0', username=un)
+        f1 = UploadedFile.objects.create_cleanly(key=f1_k, name='g', last_modified=f1_dt, size='0', username=un)
         f2_k = uuid.UUID('6b1ec55f-3e41-4780-aa71-0fbbbe4e0d53')
         f2_dt = datetime.datetime.fromisoformat('2023-10-15T23:50:00Z')
-        f2 = UploadedFile.objects.create(key=f2_k, name='g', last_modified=f2_dt, size='1', username=un)
+        f2 = UploadedFile.objects.create_cleanly(key=f2_k, name='g', last_modified=f2_dt, size='1', username=un)
         f3_k = uuid.UUID('6b1ec55f-3e41-4780-aa71-0fbbbe4e0d5f')
         f3_dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
-        f3 = UploadedFile.objects.create(key=f3_k, name='f', last_modified=f3_dt, size='2', username=un)
+        f3 = UploadedFile.objects.create_cleanly(key=f3_k, name='f', last_modified=f3_dt, size='2', username=un)
         f4_k = uuid.UUID('6b1ec55f-3e41-4780-aa71-0fbbbe4e0d59')
         f4_dt = datetime.datetime.fromisoformat('2023-10-08T23:20:00Z')
-        f4 = UploadedFile.objects.create(key=f4_k, name='g', last_modified=f4_dt, size='3', username=un)
+        f4 = UploadedFile.objects.create_cleanly(key=f4_k, name='g', last_modified=f4_dt, size='3', username=un)
         f5_k = uuid.UUID('6b1ec55f-3e41-4780-aa71-0fbbbe4e0d51')
         f5_dt = datetime.datetime.fromisoformat('2023-10-10T23:50:00Z')
-        f5 = UploadedFile.objects.create(key=f5_k, name='f', last_modified=f5_dt, size='4', username=un)
+        f5 = UploadedFile.objects.create_cleanly(key=f5_k, name='f', last_modified=f5_dt, size='4', username=un)
         f6_k = uuid.UUID('6b1ec55f-3e41-4780-aa71-0fbbbe4e0d55')
         f6_dt = datetime.datetime.fromisoformat('2023-10-08T23:20:00Z')
-        f6 = UploadedFile.objects.create(key=f6_k, name='g', last_modified=f6_dt, size='5', username=un)
+        f6 = UploadedFile.objects.create_cleanly(key=f6_k, name='g', last_modified=f6_dt, size='5', username=un)
         f7_k = uuid.UUID('6b1ec55f-3e41-4780-aa71-0fbbbe4e0d52')
         f7_dt = datetime.datetime.fromisoformat('2023-10-10T23:50:00Z')
-        f7 = UploadedFile.objects.create(key=f7_k, name='f', last_modified=f7_dt, size='6', username=un)
+        f7 = UploadedFile.objects.create_cleanly(key=f7_k, name='f', last_modified=f7_dt, size='6', username=un)
         f8_k = uuid.UUID('6b1ec55f-3e41-4780-aa71-0fbbbe4e0d5a')
         f8_dt = datetime.datetime.fromisoformat('2023-10-23T23:20:00Z')
-        f8 = UploadedFile.objects.create(key=f8_k, name='f', last_modified=f8_dt, size='7', username=un)
+        f8 = UploadedFile.objects.create_cleanly(key=f8_k, name='f', last_modified=f8_dt, size='7', username=un)
 
         req = self.req_factory.get('/')
         req.user = AnonymousUser()
@@ -1224,7 +1212,7 @@ class FileViewTest(TestCase):
         # 実際にアップロードしようとすると、タイミングの問題でS3にアク
         # セスできない。S3にアクセスする必要はないので、テストでは
         # upload_blobを使わず、単にオブジェクトを作成しておく。
-        cls.s3uploader = S3Uploader.objects.create(
+        cls.s3uploader = S3Uploader.objects.create_cleanly(
             status=S3Uploader.COMPLETED, username=cls.user_shimon.username, size=6)
 
     def setUp(self):
@@ -1324,15 +1312,18 @@ class FileViewTest(TestCase):
         self.assertQuerySetEqual(S3Uploader.objects.all(), [self.s3uploader])
 
     def test_empty_filename(self):
+        '''
+        ファイル名が空文字列なら例外を送出
+        '''
+
         f1_name = ''
         req = self.req_factory.post('/', data={'blobkey': self.s3uploader.key, 'filename': f1_name})
         req.user = self.user_shimon
 
-        resp = FileView.as_view()(req)
-        self.assertEqual(resp.status_code, 302)
-        self.assertEqual(resp['Location'], reverse('page:file_page'))
-        self.assertQuerySetEqual(UploadedFile.objects.all(), [UploadedFile.objects.get(name=f1_name)])
-        self.assertQuerySetEqual(S3Uploader.objects.all(), [])
+        with self.assertRaises(ValidationError):
+            FileView.as_view()(req)
+        self.assertQuerySetEqual(UploadedFile.objects.all(), [])
+        self.assertQuerySetEqual(S3Uploader.objects.all(), [self.s3uploader])
 
     def test_too_long_filename(self):
         '''
@@ -1343,7 +1334,7 @@ class FileViewTest(TestCase):
         req = self.req_factory.post('/', data={'blobkey': self.s3uploader.key, 'filename': f1_name})
         req.user = self.user_shimon
 
-        with self.assertRaises(DataError):
+        with self.assertRaises(ValidationError):
             FileView.as_view()(req)
         self.assertQuerySetEqual(UploadedFile.objects.all(), [])
         self.assertQuerySetEqual(S3Uploader.objects.all(), [self.s3uploader])
@@ -1382,7 +1373,7 @@ class FileViewTest(TestCase):
         '''
 
         self.s3uploader.username = 'john'
-        self.s3uploader.save()
+        self.s3uploader.save_cleanly()
 
         f1_name = 'hello.txt'
         req = self.req_factory.post('/', data={'blobkey': self.s3uploader.key, 'filename': f1_name})
