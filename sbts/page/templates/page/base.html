@@ -8,18 +8,18 @@
 <body>
 <header>
   <nav class="header-nav">
-    <div class="header-top"><a href="{% url 'top' %}" ><b>sbts</b></a></div>
+    <div class="header-top"><a href="{% url 'page:top' %}" ><b>sbts</b></a></div>
 
     <ul class="header-navlist">
-      <li class="header-navtab{% if selected_tab == 'ticket' %} header-navtab-selected{% endif %}"><a href="{% url 'ticket' %}">チケット</a></li>
-      <li class="header-navtab{% if selected_tab == 'file' %} header-navtab-selected{% endif %}"><a href="{% url 'file' %}">ファイル</a></li>
+      <li class="header-navtab{% if selected_tab == 'ticket' %} header-navtab-selected{% endif %}"><a href="{% url 'page:ticket' %}">チケット</a></li>
+      <li class="header-navtab{% if selected_tab == 'file' %} header-navtab-selected{% endif %}"><a href="{% url 'page:file' %}">ファイル</a></li>
     </ul>
 
     <div class="header-authn">
       {% if user.is_authenticated %}
-      <a href="{% url 'logout' %}">ログアウト</a>
+      <a href="{% url 'page:logout' %}">ログアウト</a>
       {% else %}
-      <a href="{% url 'login' %}">ログイン</a>
+      <a href="{% url 'page:login' %}">ログイン</a>
       {% endif %}
     </div>
   </nav>

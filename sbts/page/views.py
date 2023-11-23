@@ -49,7 +49,7 @@ class FilePageView(BaseFilePageView):
         ctx['constant_map'] = {
             'url_map': {
                 name: reverse(name)
-                for name in ['file:upload']
+                for name in ['page:file:upload']
             }
         }
 
@@ -64,7 +64,7 @@ class CreateFileView(LoginRequiredView):
             filename=request.POST['filename'],
             last_modified=timezone.now())
 
-        return HttpResponseRedirect(reverse('file'))
+        return HttpResponseRedirect(reverse('page:file'))
 
 
 class TicketPageView(BaseTicketPageView):
@@ -83,7 +83,7 @@ class CreateTicketView(LoginRequiredView):
                               title=request.POST['title'],
                               created_at=now)
 
-        return HttpResponseRedirect(reverse('ticket'))
+        return HttpResponseRedirect(reverse('page:ticket'))
 
 
 class TicketDetailPageView(BaseTicketPageView):
@@ -106,7 +106,7 @@ class CreateCommentView(LoginRequiredView):
                              comment=request.POST['comment'],
                              created_at=now)
 
-        url = reverse('ticket_detail', kwargs={
+        url = reverse('page:ticket_detail', kwargs={
             'key': kwargs['key'],
         })
         return HttpResponseRedirect(url)

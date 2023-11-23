@@ -130,9 +130,9 @@ if 'test' not in sys.argv:
     }
 
 
-LOGIN_REDIRECT_URL = 'top'
-LOGIN_URL = 'login'
-LOGOUT_REDIRECT_URL = 'top'
+LOGIN_REDIRECT_URL = 'page:top'
+LOGIN_URL = 'page:login'
+LOGOUT_REDIRECT_URL = 'page:top'
 
 
 REST_FRAMEWORK = {

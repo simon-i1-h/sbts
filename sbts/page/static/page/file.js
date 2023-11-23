@@ -26,7 +26,7 @@ uploadform.addEventListener('submit', async ev => {
     let file = uploadfile.files[0];
 
     try {
-        let resp = await fetch(url_map['file:upload'], {
+        let resp = await fetch(url_map['page:file:upload'], {
             method: 'POST',
             mode: 'same-origin',
             headers: {

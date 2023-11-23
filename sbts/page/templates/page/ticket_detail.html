@@ -19,7 +19,7 @@
   </div>
 
   {% if user.is_authenticated %}
-  <form action="{% url 'create_comment' ticket.key %}" method="post" class="widget-group">
+  <form action="{% url 'page:create_comment' ticket.key %}" method="post" class="widget-group">
     {% csrf_token %}
     <textarea rows="8" name="comment"></textarea>
     <div class="enter-button"><input type="submit" value="コメント"></div>
