@@ -6,7 +6,7 @@
 
 {% block content %}
   {% if user.is_authenticated %}
-  <form action="{% url 'page:create_file' %}" method="post" class="widget-group" id="uploadform">
+  <form action="{% url 'page:file' %}" method="post" class="widget-group" id="uploadform">
     {% csrf_token %}
     <input type="hidden" name="blobkey">
     <input type="hidden" name="filename">
