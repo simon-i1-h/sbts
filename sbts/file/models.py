@@ -6,7 +6,7 @@ import boto3
 
 class UploadedFile(models.Model):
     class Manager(models.Manager):
-        def create_from_s3(self, key, username, name, last_modified, **kwargs):
+        def create_from_s3(self, key, username, filename, last_modified, **kwargs):
             with transaction.atomic():
                 uploader = S3Uploader.objects.get(
                     key=key,
@@ -17,7 +17,7 @@ class UploadedFile(models.Model):
                 # S3のオブジェクトの所有者をS3UploaderからUploadedFileに移動
                 file = self.create(
                     key=key,
-                    name=name,
+                    name=filename,
                     last_modified=last_modified,
                     size=uploader.size,
                     username=username,

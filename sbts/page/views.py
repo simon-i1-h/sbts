@@ -61,7 +61,7 @@ class CreateFileView(LoginRequiredView):
         UploadedFile.objects.create_from_s3(
             key=request.POST['blobkey'],
             username=request.user.username,
-            name=request.POST['filename'],
+            filename=request.POST['filename'],
             last_modified=timezone.now())
 
         return HttpResponseRedirect(reverse('file'))
