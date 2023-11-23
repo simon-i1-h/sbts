@@ -3,7 +3,7 @@ import random
 import string
 import uuid
 
-from django.db import DataError
+from django.db import DataError, transaction
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
 from django.core.exceptions import PermissionDenied, ObjectDoesNotExist, \
@@ -500,18 +500,23 @@ class TicketViewTest(TestCase):
 
     def test_too_long_title(self):
         '''
-        タイトルがすごく長い場合は成功
+        タイトルがすごく長い場合は例外を送出
         '''
 
         self.assertQuerySetEqual(Ticket.objects.all(), [])
 
-        t1_title = 't' * 1024
+        t1_title = 't' * 256
         req = self.req_factory.post('/', data={'title': t1_title})
         req.user = self.user_shimon
-        resp = TicketView.as_view()(req)
-        self.assertEqual(resp.status_code, 302)
-        self.assertEqual(resp['Location'], reverse('page:ticket_page'))
-        self.assertQuerySetEqual(Ticket.objects.all(), [Ticket.objects.get(title=t1_title)])
+
+        # データベースへのデータの挿入の失敗でトランザクションが壊れ、
+        # その後クエリが失敗するようになるため、アトミックブロックを追
+        # 加している。
+        with transaction.atomic():
+            with self.assertRaises(DataError):
+                TicketView.as_view()(req)
+
+        self.assertQuerySetEqual(Ticket.objects.all(), [])
 
     def test_no_title(self):
         '''
@@ -890,7 +895,7 @@ class CommentViewTest(TestCase):
 
     def test_too_long_comment(self):
         '''
-        コメントが長すぎるときは成功
+        コメントが長すぎるときは例外を送出
         '''
 
         t1_dt = datetime.datetime.fromisoformat('2023-10-26T00:00:00Z')
@@ -898,14 +903,18 @@ class CommentViewTest(TestCase):
 
         self.assertQuerySetEqual(t1.comment_set.all(), [])
 
-        t1_c1_comment = 'c' * 1024 * 1024
+        t1_c1_comment = 'c' * 65536
         req = self.req_factory.post('/', data={'key': t1.key, 'comment': t1_c1_comment})
         req.user = self.user_shimon
 
-        resp = CommentView.as_view()(req)
-        self.assertEqual(resp.status_code, 302)
-        self.assertEqual(resp['Location'], reverse('page:ticket_detail_page', kwargs={'key': t1.key}))
-        self.assertQuerySetEqual(t1.comment_set.all(), [t1.comment_set.get(comment=t1_c1_comment)])
+        # データベースへのデータの挿入の失敗でトランザクションが壊れ、
+        # その後クエリが失敗するようになるため、アトミックブロックを追
+        # 加している。
+        with transaction.atomic():
+            with self.assertRaises(DataError):
+                CommentView.as_view()(req)
+
+        self.assertQuerySetEqual(t1.comment_set.all(), [])
 
     def test_invalid_ticket_and_too_long_comment(self):
         '''
@@ -919,6 +928,7 @@ class CommentViewTest(TestCase):
         c1_comment = 'c' * 1024 * 1024
         req = self.req_factory.post('/', data={'key': key, 'comment': c1_comment})
         req.user = self.user_shimon
+
         with self.assertRaises(ObjectDoesNotExist):
             CommentView.as_view()(req)
         self.assertQuerySetEqual(Comment.objects.all(), [])

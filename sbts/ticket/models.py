@@ -14,7 +14,7 @@ class Ticket(models.Model):
     objects = Manager()
 
     key = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    title = models.TextField()
+    title = models.CharField(max_length=255)
     created_at = models.DateTimeField()
 
     def sorted_comments(self):
@@ -31,6 +31,6 @@ class Ticket(models.Model):
 class Comment(models.Model):
     key = models.UUIDField(primary_key=True, default=uuid.uuid4)
     username = models.CharField(max_length=150)
-    comment = models.TextField()
+    comment = models.CharField(max_length=65535)
     created_at = models.DateTimeField()
     ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE)
