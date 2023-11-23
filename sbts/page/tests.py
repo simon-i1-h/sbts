@@ -464,7 +464,7 @@ class CreateTicketViewTest(TestCase):
 
         resp = CreateTicketView.as_view()(req)
         self.assertEqual(resp.status_code, 302)
-        self.assertEqual(resp['Location'], reverse('page:ticket'))
+        self.assertEqual(resp['Location'], reverse('page:ticket_page'))
         self.assertQuerySetEqual(Ticket.objects.all(), [Ticket.objects.get(title=t1_title)])
 
     def test_extra_data(self):
@@ -480,7 +480,7 @@ class CreateTicketViewTest(TestCase):
 
         resp = CreateTicketView.as_view()(req)
         self.assertEqual(resp.status_code, 302)
-        self.assertEqual(resp['Location'], reverse('page:ticket'))
+        self.assertEqual(resp['Location'], reverse('page:ticket_page'))
         self.assertQuerySetEqual(Ticket.objects.all(), [Ticket.objects.get(title=t1_title)])
 
     def test_empty_title(self):
@@ -495,7 +495,7 @@ class CreateTicketViewTest(TestCase):
         req.user = self.user_shimon
         resp = CreateTicketView.as_view()(req)
         self.assertEqual(resp.status_code, 302)
-        self.assertEqual(resp['Location'], reverse('page:ticket'))
+        self.assertEqual(resp['Location'], reverse('page:ticket_page'))
         self.assertQuerySetEqual(Ticket.objects.all(), [Ticket.objects.get(title=t1_title)])
 
     def test_too_long_title(self):
@@ -510,7 +510,7 @@ class CreateTicketViewTest(TestCase):
         req.user = self.user_shimon
         resp = CreateTicketView.as_view()(req)
         self.assertEqual(resp.status_code, 302)
-        self.assertEqual(resp['Location'], reverse('page:ticket'))
+        self.assertEqual(resp['Location'], reverse('page:ticket_page'))
         self.assertQuerySetEqual(Ticket.objects.all(), [Ticket.objects.get(title=t1_title)])
 
     def test_no_title(self):
@@ -814,7 +814,7 @@ class CreateCommentViewTest(TestCase):
 
         resp = CreateCommentView.as_view()(req)
         self.assertEqual(resp.status_code, 302)
-        self.assertEqual(resp['Location'], reverse('page:ticket_detail', kwargs={'key': t1.key}))
+        self.assertEqual(resp['Location'], reverse('page:ticket_detail_page', kwargs={'key': t1.key}))
         self.assertQuerySetEqual(t1.comment_set.all(), [t1.comment_set.get(comment=t1_c1_comment)])
 
     def test_extra_data(self):
@@ -833,7 +833,7 @@ class CreateCommentViewTest(TestCase):
 
         resp = CreateCommentView.as_view()(req)
         self.assertEqual(resp.status_code, 302)
-        self.assertEqual(resp['Location'], reverse('page:ticket_detail', kwargs={'key': t1.key}))
+        self.assertEqual(resp['Location'], reverse('page:ticket_detail_page', kwargs={'key': t1.key}))
         self.assertQuerySetEqual(t1.comment_set.all(), [t1.comment_set.get(comment=t1_c1_comment)])
 
     def test_empty_comment(self):
@@ -852,7 +852,7 @@ class CreateCommentViewTest(TestCase):
 
         resp = CreateCommentView.as_view()(req)
         self.assertEqual(resp.status_code, 302)
-        self.assertEqual(resp['Location'], reverse('page:ticket_detail', kwargs={'key': t1.key}))
+        self.assertEqual(resp['Location'], reverse('page:ticket_detail_page', kwargs={'key': t1.key}))
         self.assertQuerySetEqual(t1.comment_set.all(), [t1.comment_set.get(comment=t1_c1_comment)])
 
     def test_invalid_ticket(self):
@@ -904,7 +904,7 @@ class CreateCommentViewTest(TestCase):
 
         resp = CreateCommentView.as_view()(req)
         self.assertEqual(resp.status_code, 302)
-        self.assertEqual(resp['Location'], reverse('page:ticket_detail', kwargs={'key': t1.key}))
+        self.assertEqual(resp['Location'], reverse('page:ticket_detail_page', kwargs={'key': t1.key}))
         self.assertQuerySetEqual(t1.comment_set.all(), [t1.comment_set.get(comment=t1_c1_comment)])
 
     def test_invalid_ticket_and_too_long_comment(self):
@@ -1241,7 +1241,7 @@ class CreateFileViewTest(TestCase):
 
         resp = CreateFileView.as_view()(req)
         self.assertEqual(resp.status_code, 302)
-        self.assertEqual(resp['Location'], reverse('page:file'))
+        self.assertEqual(resp['Location'], reverse('page:file_page'))
         self.assertQuerySetEqual(UploadedFile.objects.all(), [UploadedFile.objects.get(name=f1_name)])
         self.assertQuerySetEqual(S3Uploader.objects.all(), [])
 
@@ -1256,7 +1256,7 @@ class CreateFileViewTest(TestCase):
 
         resp = CreateFileView.as_view()(req)
         self.assertEqual(resp.status_code, 302)
-        self.assertEqual(resp['Location'], reverse('page:file'))
+        self.assertEqual(resp['Location'], reverse('page:file_page'))
         self.assertQuerySetEqual(UploadedFile.objects.all(), [UploadedFile.objects.get(name=f1_name)])
         self.assertQuerySetEqual(S3Uploader.objects.all(), [])
 
@@ -1320,7 +1320,7 @@ class CreateFileViewTest(TestCase):
 
         resp = CreateFileView.as_view()(req)
         self.assertEqual(resp.status_code, 302)
-        self.assertEqual(resp['Location'], reverse('page:file'))
+        self.assertEqual(resp['Location'], reverse('page:file_page'))
         self.assertQuerySetEqual(UploadedFile.objects.all(), [UploadedFile.objects.get(name=f1_name)])
         self.assertQuerySetEqual(S3Uploader.objects.all(), [])
 

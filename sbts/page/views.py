@@ -64,7 +64,7 @@ class CreateFileView(LoginRequiredView):
             filename=request.POST['filename'],
             last_modified=timezone.now())
 
-        return HttpResponseRedirect(reverse('page:file'))
+        return HttpResponseRedirect(reverse('page:file_page'))
 
 
 class TicketPageView(BaseTicketPageView):
@@ -83,7 +83,7 @@ class CreateTicketView(LoginRequiredView):
                               title=request.POST['title'],
                               created_at=now)
 
-        return HttpResponseRedirect(reverse('page:ticket'))
+        return HttpResponseRedirect(reverse('page:ticket_page'))
 
 
 class TicketDetailPageView(BaseTicketPageView):
@@ -106,7 +106,7 @@ class CreateCommentView(LoginRequiredView):
                              comment=request.POST['comment'],
                              created_at=now)
 
-        url = reverse('page:ticket_detail', kwargs={
+        url = reverse('page:ticket_detail_page', kwargs={
             'key': request.POST['key'],
         })
         return HttpResponseRedirect(url)
