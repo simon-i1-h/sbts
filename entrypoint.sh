@@ -22,8 +22,8 @@ wait_pg() {
   return 1
 }
 
-# MinIOが立ち上がるのを待つ
-wait_minio() {
+# S3が立ち上がるのを待つ
+wait_s3() {
   for i in $(seq 0 4); do
     if doaws s3 ls --page-size 1 > /dev/null; then
       echo "$FUNCNAME: done"
@@ -45,7 +45,7 @@ chown -R app:app /home/app/opt/sbts/config
 cd /home/app/var/sbts
 
 wait_pg
-wait_minio
+wait_s3
 
 if ! doaws s3api head-bucket --bucket sbtsfile > /dev/null; then
   doaws s3 mb s3://sbtsfile
