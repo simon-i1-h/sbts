@@ -10,7 +10,8 @@ jobs:
       - name: 設定ファイルのコピー
         run: |
           cp -r config-sample config &&
-          cp sbts_public_custom-sample.py sbts_public_custom.py
+          cp sbts_public_custom-sample.py sbts_public_custom.py &&
+          cp sample.env .env
       - name: Dockerイメージのビルド
         run: docker compose build
       - name: Dockerコンテナの起動

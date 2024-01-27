@@ -1,4 +1,5 @@
 import sys
+import os
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = None
@@ -108,8 +109,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 S3_BUCKET_FILE = 'sbtsfile'
-S3_ENDPOINT = 'http://minio:9000'
+S3_ENDPOINT = os.environ['SBTS_S3_ENDPOINT']
 S3_CHUNK_SIZE = 8 * (1024 ** 2)  # 8MiB
+S3_INVALID_ENDPOINT = 'http://invalid:9000'  # for tests
 
 
 # TODO: テスト時は無効にすべき。現状は、不完全だが回避策的な分岐をして

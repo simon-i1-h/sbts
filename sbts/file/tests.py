@@ -102,7 +102,7 @@ class UploadFileTest(ObjectStorageTestCase):
         self.assertEqual(o1.username, self.user_shimon.username)
         self.assertEqual(o1.size, len(content))
 
-    @override_settings(S3_ENDPOINT='http://invalid:9000')
+    @override_settings(S3_ENDPOINT=settings.S3_INVALID_ENDPOINT)
     def test_no_s3(self):
         '''
         オブジェクトストレージにアクセスできない場合でも、データベース

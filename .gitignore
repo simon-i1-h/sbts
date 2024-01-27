@@ -1,4 +1,5 @@
-/var
+__pycache__
+/.env
 /config
 /sbts_public_custom.py
-__pycache__
+/var

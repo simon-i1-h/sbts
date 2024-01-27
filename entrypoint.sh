@@ -2,10 +2,8 @@
 
 set -eu
 
-MINIO_ENDPOINT=http://minio:9000
-
 doaws() {
-  aws --endpoint-url "$MINIO_ENDPOINT" "$@"
+  aws --endpoint-url "$SBTS_S3_ENDPOINT" "$@"
 }
 
 # PostgreSQLが立ち上がるのを待つ
